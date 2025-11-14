@@ -101,23 +101,42 @@ public function submitMarks(Request $request, $eventId)
 }
 public function scoresList()
 {
-    $judgeId = Auth::id();
+    $judgeStage = session('judge_stage');
 
-    // Fetch events assigned to the judge's stage
-    $stage = session('judge_stage');
+    // Get all scores for this judge stage
+    $eventIds = Event::where('stage_number', $judgeStage)->pluck('id');
 
-    $events = Event::where('stage_number', $stage)
-        ->where('stage_type', 'stage')
-        ->orderBy('category')
-        ->get();
+$scores = JudgeScore::with(['registration.student'])
+            ->whereIn('event_id', $eventIds)
+            ->orderBy('score', 'desc')
+            ->get();
 
-    // Get scores given by this judge
-    $scores = JudgeScore::with(['registration.student', 'event'])
-        ->where('judge_id', $judgeId)
-        ->get();
 
-    return view('judge.scores_list', compact('events', 'scores'));
+    // Get events for this stage
+    $events = Event::where('stage_number', $judgeStage)
+                ->orderBy('category')
+                ->get();
+
+    // Attach ranking to each event group
+    foreach ($events as $event) {
+        // Filter scores for this event
+        $eventScores = $scores->where('event_id', $event->id);
+
+        $rank = 1;
+        $previousScore = null;
+
+        foreach ($eventScores as $item) {
+            if ($previousScore !== null && $item->score < $previousScore) {
+                $rank++;
+            }
+            $item->rank = $rank;
+            $previousScore = $item->score;
+        }
+    }
+
+    return view('judge.score_list', compact('scores', 'events'));
 }
+
 
 
 
