@@ -62,6 +62,9 @@ Route::middleware(['auth', 'role:judge'])->prefix('judge')->group(function () {
     Route::get('/dashboard', [JudgeDashboardController::class, 'index'])->name('judge.dashboard');
     Route::get('/event/{id}', [JudgeDashboardController::class, 'viewEvent'])->name('judge.view_event');
     Route::post('/event/{id}/submit', [JudgeDashboardController::class, 'submitMarks'])->name('judge.submitMarks');
+    Route::get('/judge/scores', [JudgeDashboardController::class, 'scoresList'])
+    ->name('judge.scores');
+
 });
 
 

@@ -31,5 +31,10 @@
                 </tbody>
             </table>
         @endif
+        <a href="{{ route('judge.scores') }}"
+   class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">
+   📄 View Score List
+</a>
+
     </div>
 </x-app-layout>

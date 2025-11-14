@@ -99,6 +99,26 @@ public function submitMarks(Request $request, $eventId)
 
     return back()->with('success', 'Scores and grades saved successfully!');
 }
+public function scoresList()
+{
+    $judgeId = Auth::id();
+
+    // Fetch events assigned to the judge's stage
+    $stage = session('judge_stage');
+
+    $events = Event::where('stage_number', $stage)
+        ->where('stage_type', 'stage')
+        ->orderBy('category')
+        ->get();
+
+    // Get scores given by this judge
+    $scores = JudgeScore::with(['registration.student', 'event'])
+        ->where('judge_id', $judgeId)
+        ->get();
+
+    return view('judge.scores_list', compact('events', 'scores'));
+}
+
 
 
 }

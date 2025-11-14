@@ -14,6 +14,7 @@ class JudgeScore extends Model
         'event_id',
         'registration_id',
         'score',
+        'grade',
     ];
 
     public function judge()
