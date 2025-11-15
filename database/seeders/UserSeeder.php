@@ -54,6 +54,12 @@ class UserSeeder extends Seeder
                 'stream' => 'sharia',
                 'password' => 'sharia123',
             ],
+             [
+                'name' => 'Darul Hzppppudda Sharia College',
+                'email' => 'shardzddppppzia@college.com',
+                'stream' => 'sharia',
+                'password' => 'sharia123',
+            ],
             [
                 'name' => 'Darul Huda SHE College',
                 'email' => 'she@college.com',

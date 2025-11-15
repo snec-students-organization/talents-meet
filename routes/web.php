@@ -8,13 +8,101 @@ use App\Http\Controllers\Institution\EventRegistrationController;
 use App\Http\Controllers\Admin\RegistrationOverviewController;
 use App\Http\Controllers\StageAdmin\StageDashboardController;
 use App\Http\Controllers\Judge\JudgeDashboardController;
-
+use App\Http\Controllers\Admin\ResultsController;
+use App\Models\Registration;
+use App\Models\Event;
+use App\Models\JudgeScore;
+use Illuminate\Support\Facades\DB;
 // ------------------
 // PUBLIC ROUTES
 // ------------------
 Route::get('/', function () {
     return view('dashboard');
 });
+
+
+
+
+Route::get('/results/{stream}', function($stream) {
+
+    $streams = ['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'];
+    if (!in_array($stream, $streams)) abort(404);
+
+    // Get event filter
+    $eventId = request('event_id');
+
+    // List of events in this stream
+    $eventList = Event::where('stream', $stream)
+        ->orderBy('name')
+        ->get();
+
+    // MAIN institution ranking table
+    $table = "{$stream}_results";
+
+    $rows = DB::table($table)
+        ->join('users','users.id',"{$table}.institution_id")
+        ->select(
+            "{$table}.institution_id",
+            "{$table}.total_points",
+            'users.name as institution_name'
+        )
+        ->where('confirmed', true)
+        ->orderByDesc('total_points')
+        ->get();
+
+    // If there are no published results
+    if ($rows->isEmpty()) {
+        return view('public.results.stream', [
+            'stream' => $stream,
+            'eventList' => $eventList,
+            'rows' => [],
+            'details' => [],
+            'eventId' => $eventId
+        ]);
+    }
+
+    // BEST PARTICIPANT FOR EACH INSTITUTION PER EVENT
+    $details = Registration::select(
+            'registrations.institution_id',
+            'registrations.event_id',
+            'students.uid',
+            'students.name',
+            'events.category',
+            'events.name as event_name',
+            DB::raw('AVG(judge_scores.score) as avg_score'),
+            DB::raw('MAX(judge_scores.grade) as grade')
+        )
+        ->join('students', 'students.id', 'registrations.student_id')
+        ->join('events', 'events.id', 'registrations.event_id')
+        ->leftJoin('judge_scores', 'judge_scores.registration_id', 'registrations.id')
+        ->where('events.stream', $stream)
+        ->groupBy(
+            'registrations.institution_id',
+            'registrations.event_id',
+            'students.uid',
+            'students.name',
+            'events.category',
+            'events.name'
+        )
+        ->get();
+
+    // Group by event → then institution ID → take top performer
+    $eventRanks = $details->groupBy('event_id')->map(function ($eventGroup) {
+        return $eventGroup->groupBy('institution_id')->map(function ($instGroup) {
+            return $instGroup->sortByDesc('avg_score')->first();
+        });
+    });
+
+    return view('public.results.stream', [
+        'stream' => $stream,
+        'eventList' => $eventList,
+        'rows' => $rows,
+        'eventRanks' => $eventRanks,   // grouped results
+        'eventId' => $eventId,
+    ]);
+});
+
+
 
 // ------------------
 // REDIRECT AFTER LOGIN
@@ -48,6 +136,14 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/registrations', [\App\Http\Controllers\Admin\RegistrationOverviewController::class, 'index'])
             ->name('admin.registrations.index');
     });
+
+
+Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
+    Route::get('results', [ResultsController::class,'index'])->name('admin.results.index');
+    Route::post('results/calculate', [ResultsController::class,'calculate'])->name('admin.results.calculate');
+    Route::post('results/publish', [ResultsController::class,'publish'])->name('admin.results.publish');
+    Route::post('results/reset', [ResultsController::class,'reset'])->name('admin.results.reset');
+});
 
 
 // JUDGE DASHBOARD
