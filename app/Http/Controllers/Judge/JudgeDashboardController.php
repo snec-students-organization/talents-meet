@@ -136,6 +136,65 @@ $scores = JudgeScore::with(['registration.student'])
 
     return view('judge.score_list', compact('scores', 'events'));
 }
+public function nonStageEvents()
+{
+    $events = Event::where('stage_type', 'non_stage')
+        ->orderBy('stream')
+        ->orderBy('category')
+        ->get();
+
+    return view('judge.nonstage.index', compact('events'));
+}
+public function viewNonStageEvent($eventId)
+{
+    $event = Event::findOrFail($eventId);
+
+    $registrations = Registration::with('student')
+        ->where('event_id', $eventId)
+        ->get();
+
+    $existingScores = JudgeScore::where('judge_id', Auth::id())
+        ->where('event_id', $eventId)
+        ->get()
+        ->keyBy('registration_id')
+        ->map(function ($score) {
+            return [
+                'score' => $score->score,
+                'grade' => $score->grade,
+            ];
+        });
+
+    return view('judge.nonstage.score', compact('event', 'registrations', 'existingScores'));
+}
+public function submitNonStageMarks(Request $request, $eventId)
+{
+    $request->validate([
+        'scores' => 'required|array',
+        'scores.*' => 'nullable|numeric|min:0|max:100',
+        'grades' => 'nullable|array',
+        'grades.*' => 'nullable|string|max:2',
+    ]);
+
+    foreach ($request->scores as $registrationId => $score) {
+        $grade = $request->grades[$registrationId] ?? null;
+
+        JudgeScore::updateOrCreate(
+            [
+                'judge_id' => auth()->id(),
+                'event_id' => $eventId,
+                'registration_id' => $registrationId,
+            ],
+            [
+                'score' => $score,
+                'grade' => $grade,
+            ]
+        );
+    }
+
+    return back()->with('success', 'Scores for Non-Stage Event saved successfully!');
+}
+
+
 
 
 

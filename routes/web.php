@@ -165,6 +165,15 @@ Route::middleware(['auth', 'role:judge'])->prefix('judge')->group(function () {
     Route::post('/event/{id}/submit', [JudgeDashboardController::class, 'submitMarks'])->name('judge.submitMarks');
     Route::get('/judge/scores', [JudgeDashboardController::class, 'scoresList'])
     ->name('judge.scores');
+    Route::get('/non-stage', [JudgeDashboardController::class, 'nonStageEvents'])
+    ->name('judge.nonstage');
+
+Route::get('/non-stage/event/{id}', [JudgeDashboardController::class, 'viewNonStageEvent'])
+    ->name('judge.nonstage.event');
+
+Route::post('/non-stage/event/{id}/submit', [JudgeDashboardController::class, 'submitNonStageMarks'])
+    ->name('judge.nonstage.submit');
+
 
 });
 
