@@ -143,7 +143,12 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
     Route::post('results/calculate', [ResultsController::class,'calculate'])->name('admin.results.calculate');
     Route::post('results/publish', [ResultsController::class,'publish'])->name('admin.results.publish');
     Route::post('results/reset', [ResultsController::class,'reset'])->name('admin.results.reset');
+    Route::get('scoreboard/{stream}', [ResultsController::class, 'scoreboard'])
+     ->name('admin.scoreboard');
+
 });
+
+
 
 
 // JUDGE DASHBOARD

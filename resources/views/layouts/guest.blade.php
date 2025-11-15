@@ -1,30 +1,60 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Talents Meet') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,600,700">
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+    <!-- App Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="bg-gray-100">
+
+    {{-- SIMPLE PUBLIC NAVBAR --}}
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+            <!-- Logo -->
+            <a href="/" class="text-2xl font-bold text-indigo-700">
+                Talents Meet
+            </a>
+
+            <nav class="flex items-center gap-6">
+
+                <a href="/" class="text-gray-700 hover:text-indigo-700">Home</a>
+
+                <a href="/results/sharia" class="text-gray-700 hover:text-indigo-700">
+                    Results
                 </a>
-            </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+                @guest
+                    <a href="/login"
+                       class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                        Login
+                    </a>
+                @endguest
+
+                @auth
+                    <a href="/redirect-dashboard"
+                       class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded">
+                        Dashboard
+                    </a>
+                @endauth
+
+            </nav>
+
         </div>
-    </body>
+    </header>
+
+    {{-- PAGE CONTENT --}}
+    <main>
+        {{ $slot }}
+    </main>
+
+</body>
 </html>

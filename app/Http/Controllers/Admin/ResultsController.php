@@ -262,4 +262,116 @@ class ResultsController extends Controller
 
         return back()->with('success', "Draft results cleared for stream: {$stream}.");
     }
+    public function scoreboard($stream)
+{
+    if (!in_array($stream, $this->streams)) {
+        abort(404);
+    }
+
+    // 1. LOAD ALL EVENTS OF THIS STREAM
+    $events = Event::where('stream', $stream)
+        ->orderBy('name')
+        ->get();
+
+    if ($events->isEmpty()) {
+        return back()->with('error', 'No events found for this stream.');
+    }
+
+    // 2. LOAD ALL INSTITUTIONS WITH PUBLISHED RESULTS
+    $table = "{$stream}_results";
+
+    $institutions = DB::table($table)
+        ->join('users', 'users.id', "{$table}.institution_id")
+        ->where("{$table}.confirmed", true)
+        ->select(
+            "{$table}.institution_id",
+            'users.name as institution_name'
+        )
+        ->orderBy('institution_name')
+        ->get();
+
+    // 3. BUILD MATRIX (institution × event)
+    $matrix = [];
+
+    foreach ($institutions as $inst) {
+        foreach ($events as $event) {
+            $matrix[$inst->institution_id][$event->id] = 0; // default
+        }
+    }
+
+    // 4. GET SCORES DIRECTLY FROM DATABASE (NO SESSION)
+    $scores = JudgeScore::join('registrations', 'registrations.id', 'judge_scores.registration_id')
+        ->join('students', 'students.id', 'registrations.student_id')
+        ->join('events', 'events.id', 'judge_scores.event_id')
+        ->where('events.stream', $stream)
+        ->select(
+            'judge_scores.registration_id',
+            'judge_scores.event_id',
+            'judge_scores.grade',
+            'judge_scores.score',
+            'registrations.institution_id',
+            'students.uid',
+            'students.name',
+            'events.category'
+        )
+        ->get();
+
+    // 5. CALCULATE RANKS + POINTS PER EVENT
+    foreach ($events as $event) {
+
+        $eventScores = $scores->where('event_id', $event->id);
+
+        // average score per registration
+        $grouped = $eventScores->groupBy('registration_id')->map(function ($rows) {
+            return $rows->avg('score');
+        });
+
+        // sort by score descending
+        $sorted = $grouped->sortDesc();
+
+        // assign ranks
+        $rank = 1;
+        $previous = null;
+        $rankMap = [];
+
+        foreach ($sorted as $regId => $avgScore) {
+            if ($previous !== null && $avgScore < $previous) {
+                $rank++;
+            }
+            $rankMap[$regId] = $rank;
+            $previous = $avgScore;
+        }
+
+        // assign points
+        foreach ($eventScores as $row) {
+
+            $rank = $rankMap[$row->registration_id] ?? null;
+
+            // rank points
+            $rankPoints = 0;
+            if (in_array($rank, [1,2,3])) {
+                $rankPoints = $this->rankPoints[$event->category][$rank] ?? 0;
+            }
+
+            // grade bonus
+            $gradeBonus = $this->gradePoints[$row->grade] ?? 0;
+
+            $totalPoints = $rankPoints + $gradeBonus;
+
+            // add to matrix
+            if (!isset($matrix[$row->institution_id][$event->id])) {
+                $matrix[$row->institution_id][$event->id] = 0;
+            }
+
+            // accumulate
+            $matrix[$row->institution_id][$event->id] += $totalPoints;
+        }
+    }
+
+    return view('admin.results.scoreboard', compact(
+        'stream', 'events', 'institutions', 'matrix'
+    ));
+}
+
+
 }
