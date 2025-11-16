@@ -103,138 +103,134 @@ class ResultsController extends Controller
 
     // CALCULATE RESULTS
     public function calculate(Request $request)
-    {
-        $stream = $request->input('stream');
-        if (!in_array($stream, $this->streams)) abort(404);
+{
+    $stream = $request->input('stream');
+    if (!in_array($stream, $this->streams)) abort(404);
 
-        DB::transaction(function() use ($stream) {
+    DB::transaction(function() use ($stream) {
 
-            $table = "{$stream}_results";
+        $table = "{$stream}_results";
 
-            // Remove old draft results (keep confirmed ones)
-            DB::table($table)->where('confirmed', false)->delete();
+        // Remove previous draft results only
+        DB::table($table)->where('confirmed', false)->delete();
 
-            $events = Event::where('stream', $stream)->get();
+        // 1. GET ALL EVENTS (STAGE + NON-STAGE)
+        $events = Event::where('stream', $stream)
+            ->orderBy('category')
+            ->get();
 
-            $institutionTotals = [];
-            $breakdown = []; // <-- save ALL event details
+        $institutionTotals = [];
+        $breakdown = [];
 
-            foreach ($events as $event) {
+        foreach ($events as $event) {
 
-                // Find AVG score per registration (per event)
-                $regAverages = JudgeScore::select('registration_id', DB::raw('AVG(score) as avg_score'))
-                    ->where('event_id', $event->id)
-                    ->groupBy('registration_id')
-                    ->orderByDesc('avg_score')
-                    ->get();
+            // 2. AVERAGE SCORE PER PARTICIPANT
+            $regAverages = JudgeScore::select('registration_id', DB::raw('AVG(score) as avg_score'))
+                ->where('event_id', $event->id)
+                ->groupBy('registration_id')
+                ->orderByDesc('avg_score')
+                ->get();
 
-                // Get BEST grade for each registration
-                $gradesPerReg = JudgeScore::where('event_id', $event->id)
-                    ->get()
-                    ->groupBy('registration_id')
-                    ->mapWithKeys(function($items, $regId) {
-                        $priority = ['A'=>3,'B'=>2,'C'=>1];
-                        $best = null; $bestVal = 0;
-                        foreach ($items as $it) {
-                            $g = $it->grade;
-                            if ($g && ($priority[$g] ?? 0) > $bestVal) {
-                                $best = $g; $bestVal = $priority[$g];
-                            }
+            // 3. HIGHEST GRADE PER PARTICIPANT
+            $gradesPerReg = JudgeScore::select('registration_id', 'grade')
+                ->where('event_id', $event->id)
+                ->get()
+                ->groupBy('registration_id')
+                ->mapWithKeys(function ($items, $regId) {
+                    $priority = ['A'=>3,'B'=>2,'C'=>1];
+                    $best = null; 
+                    $bestVal = 0;
+
+                    foreach ($items as $it) {
+                        $g = $it->grade;
+                        if ($g && ($priority[$g] ?? 0) > $bestVal) {
+                            $best = $g;
+                            $bestVal = $priority[$g];
                         }
-                        return [$regId => $best];
-                    });
-
-                // Rank logic
-                $rank = 1;
-                $previousScore = null;
-
-                foreach ($regAverages as $row) {
-
-                    $avg = (float)$row->avg_score;
-
-                    if ($previousScore !== null && $avg < $previousScore) {
-                        $rank++;
                     }
+                    return [$regId => $best];
+                });
 
-                    $row->rank = $rank;
-                    $previousScore = $avg;
+            // 4. RANKING
+            $rank = 1;
+            $prevScore = null;
+            foreach ($regAverages as $row) {
+                $avg = (float)$row->avg_score;
+                if ($prevScore !== null && $avg < $prevScore) {
+                    $rank++;
                 }
-
-                // Assign Points
-                foreach ($regAverages as $row) {
-
-                    $regId = $row->registration_id;
-                    $rank = $row->rank;
-
-                    $registration = Registration::with('student')->find($regId);
-                    if (!$registration) continue;
-
-                    $institutionId = $registration->institution_id;
-
-                    // Rank points only for top 3
-                    $rankPoint = 0;
-                    if (in_array($rank, [1,2,3])) {
-                        $rankPoint = $this->rankPoints[$event->category][$rank] ?? 0;
-                    }
-
-                    // Grade bonus
-                    $grade = $gradesPerReg[$regId] ?? null;
-                    $gradeBonus = $grade ? ($this->gradePoints[$grade] ?? 0) : 0;
-
-                    // Total
-                    $totalForReg = $rankPoint + $gradeBonus;
-
-                    // Add to college total
-                    $institutionTotals[$institutionId] = ($institutionTotals[$institutionId] ?? 0) + $totalForReg;
-
-                    // SAVE BREAKDOWN
-                    $breakdown[$institutionId][] = [
-    'institution_name' => $registration->student->institution->name ?? "--",
-    'event_name' => $event->name,
-    'category' => $event->category,
-
-    // NEW
-    'uid' => $registration->student->uid ?? '-',
-    'name' => $registration->student->name ?? '-',
-    'grade' => $grade ?? '-',   // A / B / C or -
-
-    'rank' => $rank,
-    'points' => $rankPoint,
-    'grade_bonus' => $gradeBonus,
-    'total' => $totalForReg,
-];
-
-
-                }
+                $row->rank = $rank;
+                $prevScore = $avg;
             }
 
-            // Insert/Update Results Table
-            foreach ($institutionTotals as $instId => $points) {
+            // 5. AWARD POINTS
+            foreach ($regAverages as $row) {
 
-                $exists = DB::table($table)->where('institution_id', $instId)->first();
+                $regId = $row->registration_id;
 
-                if ($exists && !$exists->confirmed) {
-                    DB::table($table)->where('institution_id', $instId)->update([
-                        'total_points' => $points,
-                        'updated_at' => now(),
-                    ]);
-                } elseif (!$exists) {
-                    DB::table($table)->insert([
-                        'institution_id' => $instId,
-                        'total_points' => $points,
-                        'confirmed' => false,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+                $rank = $row->rank;
+                $rankPoint = ($this->rankPoints[$event->category][$rank] ?? 0);
+
+                $registration = Registration::with('student')->find($regId);
+                if (!$registration) continue;
+
+                $institutionId = $registration->institution_id;
+
+                $grade = $gradesPerReg[$regId] ?? null;
+                $gradeBonus = $grade ? ($this->gradePoints[$grade] ?? 0) : 0;
+
+                $totalForReg = $rankPoint + $gradeBonus;
+
+                // ADD TO TOTALS
+                $institutionTotals[$institutionId] =
+                    ($institutionTotals[$institutionId] ?? 0) + $totalForReg;
+
+                // SAVE BREAKDOWN
+                $breakdown[$institutionId][] = [
+                    'institution_name' => $registration->institution->name ?? 'Unknown',
+                    'event_name' => $event->name,
+                    'category'   => $event->category,
+                    'uid'        => $registration->student->uid ?? '-',
+                    'name'       => $registration->student->name ?? '-',
+                    'grade'      => $grade,
+                    'rank'       => $rank,
+                    'points'     => $rankPoint,
+                    'grade_bonus'=> $gradeBonus,
+                    'total'      => $totalForReg,
+                ];
             }
+        }
 
-            // Save breakdown in session for admin & public views
-            session(["breakdown_{$stream}" => $breakdown]);
-        });
+        // 6. STORE RESULTS
+        foreach ($institutionTotals as $instId => $points) {
 
-        return back()->with('success', "Calculated results for stream: {$stream}. Review and publish when ready.");
-    }
+            $existing = DB::table($table)
+                ->where('institution_id', $instId)
+                ->first();
+
+            if ($existing && !$existing->confirmed) {
+                DB::table($table)->where('institution_id', $instId)->update([
+                    'total_points' => $points,
+                    'updated_at' => now(),
+                ]);
+            } elseif (!$existing) {
+                DB::table($table)->insert([
+                    'institution_id' => $instId,
+                    'total_points' => $points,
+                    'confirmed' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // SAVE BREAKDOWN FOR PUBLIC DISPLAY
+        session(["breakdown_{$stream}" => $breakdown]);
+    });
+
+    return back()->with('success', "Results calculated for stream {$stream}.");
+}
+
 
     // PUBLISH RESULTS
     public function publish(Request $request)
@@ -372,6 +368,69 @@ class ResultsController extends Controller
         'stream', 'events', 'institutions', 'matrix'
     ));
 }
+public function nonStageScoreboard(Request $request, $stream)
+{
+    $eventId = $request->query('event_id');
+
+    // list of events to filter
+    $eventList = Event::where('stream', $stream)
+        ->where('stage_type', 'non_stage')
+        ->orderBy('name')
+        ->get();
+
+    // base query
+    $query = Registration::select(
+            'registrations.*',
+            'students.uid',
+            'students.name as student_name',
+            'users.name as institution_name',
+            'events.name as event_name',
+            'events.category',
+            DB::raw('AVG(judge_scores.score) as avg_score'),
+            DB::raw('MAX(judge_scores.grade) as grade')
+        )
+        ->join('students', 'students.id', 'registrations.student_id')
+        ->join('users', 'users.id', 'registrations.institution_id')
+        ->join('events', 'events.id', 'registrations.event_id')
+        ->leftJoin('judge_scores', 'judge_scores.registration_id', 'registrations.id')
+        ->where('events.stream', $stream)
+        ->where('events.stage_type', 'non_stage')
+        ->groupBy(
+            'registrations.id',
+            'students.uid',
+            'students.name',
+            'users.name',
+            'events.name',
+            'events.category'
+        );
+
+    if ($eventId) {
+        $query->where('registrations.event_id', $eventId);
+    }
+
+    $scoreboard = $query->orderByDesc('avg_score')->get();
+
+    // assign rank
+    $rank = 1;
+    $prevScore = null;
+
+    foreach ($scoreboard as $item) {
+        if ($prevScore !== null && $item->avg_score < $prevScore) {
+            $rank++;
+        }
+        $item->rank = $rank;
+        $prevScore = $item->avg_score;
+    }
+
+    // ⭐ NEW: selected event details for header card
+    $selectedEvent = $eventId ? Event::find($eventId) : null;
+
+    return view('admin.results.non_stage_scoreboard', compact(
+        'stream', 'eventList', 'eventId', 'scoreboard', 'selectedEvent'
+    ));
+}
+
+
 
 
 }

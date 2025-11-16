@@ -31,19 +31,50 @@
 
         {{-- SHOW EVENTS --}}
         @foreach($events as $event)
-            <h2 class="text-2xl font-semibold mt-10 mb-3">
-                {{ $event->name }} (Category {{ $event->category }})
-            </h2>
+
+            {{-- EVENT INFO BOX --}}
+            <div class="bg-white shadow rounded-md p-4 mb-5 border">
+                <h2 class="text-2xl font-semibold mb-2">{{ $event->name }}</h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+
+                    <div>
+                        <span class="font-semibold text-gray-700">Stream:</span><br>
+                        <span class="capitalize">{{ str_replace('_',' ', $event->stream) }}</span>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold text-gray-700">Category:</span><br>
+                        {{ $event->category }}
+                    </div>
+
+                    <div>
+                        <span class="font-semibold text-gray-700">Type:</span><br>
+                        <span class="capitalize">{{ $event->type }}</span>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold text-gray-700">Level:</span><br>
+                        @if(in_array($event->stream, ['sharia','she']))
+                            {{ $event->level ? ucwords(str_replace('_',' ', $event->level)) : '—' }}
+                        @else
+                            —
+                        @endif
+                    </div>
+
+                </div>
+            </div>
 
             @php
                 $eventData = $eventRanks[$event->id] ?? [];
             @endphp
 
             @if(empty($eventData))
-                <p class="text-gray-500 mb-4">No results found for this event.</p>
+                <p class="text-gray-500 mb-8">No results found for this event.</p>
                 @continue
             @endif
 
+            {{-- RESULTS TABLE --}}
             <table class="min-w-full bg-white shadow rounded text-sm mb-10">
                 <thead class="bg-gray-200">
                     <tr>
@@ -53,7 +84,9 @@
                         <th class="p-3">Name</th>
                         <th class="p-3">Category</th>
                         <th class="p-3">Grade</th>
-                        <th class="p-3">Points</th>
+
+                        {{-- EVENT SCORE ONLY --}}
+                        <th class="p-3 font-bold">Event Points</th>
                     </tr>
                 </thead>
 
@@ -68,8 +101,10 @@
                             <td class="p-3">{{ $item->name }}</td>
                             <td class="p-3">{{ $item->category }}</td>
                             <td class="p-3">{{ $item->grade }}</td>
-                            <td class="p-3 font-bold">
-                                {{ DB::table($stream . '_results')->where('institution_id', $instId)->value('total_points') }}
+
+                            {{-- Event Points (NOT total stream points) --}}
+                            <td class="p-3 font-bold text-blue-700">
+                                {{ $item->points }}
                             </td>
                         </tr>
                     @endforeach

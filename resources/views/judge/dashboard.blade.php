@@ -14,10 +14,15 @@
         </div>
 
         {{-- SCORE LIST BUTTON --}}
-        <div class="mb-6">
+        <div class="flex gap-4 mb-6">
             <a href="{{ route('judge.scores') }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded shadow">
-                📊 View All Scores (Score List)
+                📊 View All Scores
+            </a>
+
+            <a href="{{ route('judge.nonstage') }}"
+               class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded shadow">
+                🎧 Score Non-Stage Events
             </a>
         </div>
 
@@ -35,42 +40,58 @@
                             <th class="p-3 text-left">Category</th>
                             <th class="p-3 text-left">Type</th>
                             <th class="p-3 text-left">Stream</th>
+                            <th class="p-3 text-left">Level</th>
                             <th class="p-3 text-center">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach($events as $event)
                             <tr class="border-b hover:bg-gray-50">
+
+                                {{-- EVENT NAME --}}
                                 <td class="p-3 font-semibold">
                                     {{ $event->name }}
                                 </td>
 
+                                {{-- CATEGORY --}}
                                 <td class="p-3">{{ $event->category }}</td>
+
+                                {{-- TYPE --}}
                                 <td class="p-3 capitalize">{{ $event->type }}</td>
+
+                                {{-- STREAM --}}
                                 <td class="p-3 capitalize">
                                     {{ str_replace('_',' ',$event->stream) }}
                                 </td>
 
+                                {{-- LEVEL (only if exists) --}}
+                                <td class="p-3">
+                                    @if($event->level)
+                                        <span class="text-blue-600 font-medium">
+                                            {{ ucwords(str_replace('_',' ',$event->level)) }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- ACTION BUTTON --}}
                                 <td class="p-3 text-center">
                                     <a href="{{ route('judge.view_event', $event->id) }}"
                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm">
                                         📝 Score Event
                                     </a>
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>
+
                 </table>
             @endif
 
         </div>
-        <div class="mb-6">
-    <a href="{{ route('judge.nonstage') }}"
-       class="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded shadow">
-        🎧 Score Non-Stage Events
-    </a>
-</div>
-
 
     </div>
 </x-app-layout>
