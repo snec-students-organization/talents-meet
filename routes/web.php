@@ -193,6 +193,19 @@ Route::middleware(['auth', 'role:institution'])->prefix('institution')->group(fu
     Route::get('/events/{id}/register', [EventRegistrationController::class, 'registerForm'])->name('institution.events.registerForm');
     Route::post('/events/{id}/register', [EventRegistrationController::class, 'register'])->name('institution.events.register');
     Route::get('/my-registrations', [EventRegistrationController::class, 'myRegistrations'])->name('institution.events.myRegistrations');
+
+    Route::get('events/download',[EventRegistrationController::class, 'downloadAllEventsPDF'])->name('institution.events.download');
+    Route::get('events/card/{id}',[EventRegistrationController::class, 'downloadEventCard'])->name('institution.events.card');
+    
+    // Institution Participants Landing Page
+    Route::get('/participants',[EventRegistrationController::class, 'participantsPage'])->name('institution.participants');
+   // Download ALL participants PDF
+   Route::get('/participants/download/all',[EventRegistrationController::class, 'downloadAllParticipants'])->name('institution.participants.downloadAll');
+
+// Download Single Participant PDF
+   Route::get('/participants/student/{studentId}/download',[EventRegistrationController::class, 'downloadStudentCard'])->name('institution.participants.downloadStudent');
+
+
 });
 
 
