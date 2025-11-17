@@ -1,95 +1,195 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
+
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <title>Talents Meet 2025</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Talents Meet 2025') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Bootstrap CSS --}}
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #E6F0FF;
+            font-family: "Poppins", sans-serif;
+        }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background: linear-gradient(90deg, #012A4A, #014F86);
+            padding: 12px 20px;
+        }
+
+        .brand-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #F4A300;
+            letter-spacing: 1px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: #012A4A;
+            min-height: 100vh;
+            padding-top: 15px;
+            border-right: 3px solid #013A63;
+        }
+
+        .sidebar a {
+            color: #dbeafe;
+            padding: 14px 20px;
+            margin: 4px 0;
+            display: block;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: 0.25s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #013A63;
+            color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        /* MAIN CONTENT */
+        .main-area {
+            padding: 30px 25px;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f4f4f4;
+        }
+    </style>
+
+    @stack('styles')
 </head>
-<body class="font-sans antialiased bg-gray-100">
-<div class="min-h-screen flex flex-col">
 
-    <!-- 🌟 Top Navbar -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <!-- Left side (Logo / Title) -->
-                <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8 w-8">
-                    <h1 class="font-semibold text-lg text-gray-800">Talents Meet 2025</h1>
-                </div>
+<body>
 
-                <!-- Right side (User + Logout) -->
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-700 text-sm">
-                        👋 {{ Auth::user()->name }} ({{ ucfirst(Auth::user()->role) }})
-                    </span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button
-                            type="submit"
-                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm font-medium">
-                            Logout
+    {{-- NAVBAR --}}
+    <nav class="navbar navbar-dark navbar-custom shadow-sm">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+
+            <span class="brand-title">🌟 Talents Meet 2025</span>
+
+            <div>
+                @auth
+                    <div class="dropdown">
+                        <button class="btn btn-warning dropdown-toggle fw-semibold px-3"
+                            data-bs-toggle="dropdown">
+                            {{ Auth::user()->name }}
                         </button>
-                    </form>
-                </div>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a>
+                            </li>
+
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button class="dropdown-item text-danger fw-bold">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                @endauth
             </div>
         </div>
     </nav>
 
-    <!-- 🌟 Main Section -->
-    <div class="flex flex-1">
-        <!-- Sidebar (Optional, only if you added it before) -->
-        <aside class="hidden md:block w-64 bg-gray-900 text-white">
-            <div class="p-4 border-b border-gray-700 text-center">
-                <h2 class="text-lg font-semibold">Menu</h2>
+
+    {{-- CONTENT AREA --}}
+    <div class="container-fluid px-0">
+        <div class="row g-0">
+
+            {{-- SIDEBAR --}}
+            @auth
+                <div class="col-md-2 sidebar">
+
+                    {{-- ADMIN --}}
+                    @if(Auth::user()->role == 'admin')
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            🏠 Dashboard
+                        </a>
+                        <a href="{{ route('admin.events.index') }}"
+                           class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+                            🎭 Events
+                        </a>
+                        <a href="{{ route('admin.registrations.index') }}"
+                           class="{{ request()->routeIs('admin.registrations.*') ? 'active' : '' }}">
+                            📝 Registrations
+                        </a>
+                        <a href="{{ route('admin.results.index') }}"
+                           class="{{ request()->routeIs('admin.results.*') ? 'active' : '' }}">
+                            🏆 Results
+                        </a>
+                    @endif
+
+                    {{-- JUDGE --}}
+                    @if(Auth::user()->role == 'judge')
+                        <a href="{{ route('judge.dashboard') }}"
+                           class="{{ request()->routeIs('judge.dashboard') ? 'active' : '' }}">
+                            🎤 Judge Dashboard
+                        </a>
+
+                        <a href="{{ route('judge.scores') }}"
+                           class="{{ request()->routeIs('judge.scores') ? 'active' : '' }}">
+                            📊 Score List
+                        </a>
+
+                        <a href="{{ route('judge.nonstage') }}"
+                           class="{{ request()->routeIs('judge.nonstage') ? 'active' : '' }}">
+                            📝 Non-Stage
+                        </a>
+                    @endif
+
+                    {{-- INSTITUTION --}}
+                    @if(Auth::user()->role == 'institution')
+                        <a href="{{ route('institution.dashboard') }}"
+                           class="{{ request()->routeIs('institution.dashboard') ? 'active' : '' }}">
+                            🏫 Dashboard
+                        </a>
+
+                        <a href="{{ route('institution.events.index') }}"
+                           class="{{ request()->routeIs('institution.events.*') ? 'active' : '' }}">
+                            📅 Events
+                        </a>
+
+                        <a href="{{ route('institution.participants') }}"
+                           class="{{ request()->routeIs('institution.participants') ? 'active' : '' }}">
+                            🆔 Participants
+                        </a>
+                    @endif
+
+                    {{-- STAGE ADMIN --}}
+                    @if(Auth::user()->role == 'stage_admin')
+                        <a href="{{ route('stage_admin.dashboard') }}"
+                           class="{{ request()->routeIs('stage_admin.dashboard') ? 'active' : '' }}">
+                            🎭 Stage Dashboard
+                        </a>
+                    @endif
+
+                </div>
+            @endauth
+
+            {{-- MAIN PAGE --}}
+            <div class="{{ Auth::check() ? 'col-md-10' : 'col-md-12' }} main-area">
+                @yield('content')
             </div>
 
-            <nav class="p-4 space-y-2 text-sm">
-
-                {{-- ADMIN MENU --}}
-                @if(Auth::user()->role === 'admin')
-                    <a href="/admin/dashboard" class="block py-2 px-3 rounded hover:bg-gray-700">🏠 Dashboard</a>
-                    <a href="/admin/events" class="block py-2 px-3 rounded hover:bg-gray-700">🎭 Manage Events</a>
-                    <a href="/admin/students" class="block py-2 px-3 rounded hover:bg-gray-700">👨‍🎓 Manage Students</a>
-                    <a href="/admin/results" class="block py-2 px-3 rounded hover:bg-gray-700">🏆 Leaderboard</a>
-                @endif
-
-                {{-- JUDGE MENU --}}
-                @if(Auth::user()->role === 'judge')
-                    <a href="/judge/dashboard" class="block py-2 px-3 rounded hover:bg-gray-700">🏠 Dashboard</a>
-                    <a href="/judge/events" class="block py-2 px-3 rounded hover:bg-gray-700">📝 Enter Scores</a>
-                    <a href="/judge/assigned" class="block py-2 px-3 rounded hover:bg-gray-700">🎯 Assigned Events</a>
-                @endif
-
-                {{-- INSTITUTION MENU --}}
-                @if(Auth::user()->role === 'institution')
-                    <a href="/institution/dashboard" class="block py-2 px-3 rounded hover:bg-gray-700">🏫 Dashboard</a>
-                    <a href="/institution/participants" class="block py-2 px-3 rounded hover:bg-gray-700">👨‍🎓 My Students</a>
-                    <a href="/institution/results" class="block py-2 px-3 rounded hover:bg-gray-700">🏆 Results</a>
-                @endif
-
-                {{-- STAGE ADMIN MENU --}}
-                @if(Auth::user()->role === 'stage_admin')
-                    <a href="/stage/dashboard" class="block py-2 px-3 rounded hover:bg-gray-700">🎤 Dashboard</a>
-                    <a href="/stage/schedule" class="block py-2 px-3 rounded hover:bg-gray-700">📅 Stage Schedule</a>
-                    <a href="/stage/chest-numbers" class="block py-2 px-3 rounded hover:bg-gray-700">🔢 Chest Numbers</a>
-                @endif
-
-                {{-- STUDENT MENU --}}
-                @if(Auth::user()->role === 'student')
-                    <a href="/student/dashboard" class="block py-2 px-3 rounded hover:bg-gray-700">🎓 Dashboard</a>
-                    <a href="/student/events" class="block py-2 px-3 rounded hover:bg-gray-700">🎭 My Events</a>
-                    <a href="/student/certificates" class="block py-2 px-3 rounded hover:bg-gray-700">📜 Certificates</a>
-                @endif
-            </nav>
-        </aside>
-
-        <!-- Content Area -->
-        <main class="flex-1 p-6">
-            {{ $slot }}
-        </main>
+        </div>
     </div>
-</div>
+
+    {{-- Bootstrap JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    @stack('scripts')
+
 </body>
 </html>

@@ -1,75 +1,116 @@
-<x-app-layout>
-    <div class="max-w-6xl mx-auto p-6">
+@extends('layouts.app')
 
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+@section('content')
 
-        {{-- GRID MENU --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<style>
+    .tm-card {
+        border: none;
+        border-radius: 14px;
+        transition: 0.25s;
+    }
+    .tm-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+    .tm-icon {
+        font-size: 40px;
+        color: #013A63;
+    }
+    .section-title {
+        font-weight: 800;
+        color: #013A63;
+        letter-spacing: .5px;
+    }
+</style>
 
-            {{-- EVENTS --}}
-            <a href="{{ route('admin.events.index') }}"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-blue-700">🎭 Events</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    Add, edit, and manage all events.
-                </p>
-            </a>
+<div class="container-fluid">
 
-            {{-- REGISTRATIONS --}}
-            <a href="{{ route('admin.registrations.index') }}"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-green-700">📝 Registrations</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    View all student registrations.
-                </p>
-            </a>
+    {{-- HEADER --}}
+    <div class="text-center mb-4">
+        <h1 class="section-title">Admin Dashboard</h1>
+        <p class="text-muted">Manage events, registrations, results & more</p>
+    </div>
 
-            {{-- RESULTS --}}
-            <a href="{{ route('admin.results.index') }}"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-purple-700">🏆 Results</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    Calculate & publish final results per stream.
-                </p>
-            </a>
+    {{-- QUICK STATS --}}
+    <div class="row g-4 mb-5">
 
-            {{-- SCOREBOARD --}}
-            <a href="{{ route('admin.scoreboard', 'sharia') }}"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-orange-700">📊 Stage Scoreboard</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    View top performers for stage events.
-                </p>
-            </a>
+        <div class="col-md-4">
+            <div class="card tm-card p-4 text-center shadow-sm">
+                <div class="tm-icon mb-2">🎭</div>
+                <h4 class="fw-bold">Total Events</h4>
+                <p class="fs-4 text-primary">{{ \App\Models\Event::count() }}</p>
+            </div>
+        </div>
 
-            {{-- NON-STAGE SCOREBOARD --}}
-            <a href="{{ route('admin.non_stage_scoreboard', 'sharia') }}"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-red-700">📄 Non-Stage Scoreboard</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    View scores for non-stage events.
-                </p>
-            </a>
+        <div class="col-md-4">
+            <div class="card tm-card p-4 text-center shadow-sm">
+                <div class="tm-icon mb-2">🏫</div>
+                <h4 class="fw-bold">Total Institutions</h4>
+                <p class="fs-4 text-primary">{{ \App\Models\User::where('role','institution')->count() }}</p>
+            </div>
+        </div>
 
-            {{-- PUBLIC RESULTS PAGE --}}
-            <a href="/results/sharia"
-               class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                <h2 class="text-xl font-semibold text-indigo-700">🌍 Public Results Page</h2>
-                <p class="text-gray-600 text-sm mt-2">
-                    View public leaderboard.
-                </p>
-            </a>
-
-            {{-- LOGOUT --}}
-            <form method="POST" action="{{ route('logout') }}" class="p-6 bg-white shadow rounded-lg hover:bg-blue-50 transition">
-                @csrf
-                <button type="submit" class="w-full text-left">
-                    <h2 class="text-xl font-semibold text-gray-800">🚪 Logout</h2>
-                    <p class="text-gray-600 text-sm mt-2">End session</p>
-                </button>
-            </form>
-
+        <div class="col-md-4">
+            <div class="card tm-card p-4 text-center shadow-sm">
+                <div class="tm-icon mb-2">🧍</div>
+                <h4 class="fw-bold">Total Participants</h4>
+                <p class="fs-4 text-primary">{{ \App\Models\Student::count() }}</p>
+            </div>
         </div>
 
     </div>
-</x-app-layout>
+
+    {{-- ACTION CARD GRID --}}
+    <h3 class="section-title mb-3">Actions</h3>
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <a href="{{ route('admin.events.index') }}" class="text-decoration-none">
+                <div class="card tm-card shadow-sm p-4">
+                    <h5 class="fw-bold text-dark">🎭 Manage Events</h5>
+                    <p class="text-muted">Create, edit & view event categories</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ route('admin.registrations.index') }}" class="text-decoration-none">
+                <div class="card tm-card shadow-sm p-4">
+                    <h5 class="fw-bold text-dark">📝 Registrations</h5>
+                    <p class="text-muted">View institution-wise registrations</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ route('admin.results.index') }}" class="text-decoration-none">
+                <div class="card tm-card shadow-sm p-4">
+                    <h5 class="fw-bold text-dark">🏆 Results</h5>
+                    <p class="text-muted">Calculate, publish & manage results</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ route('admin.scoreboard', 'sharia') }}" class="text-decoration-none">
+                <div class="card tm-card shadow-sm p-4">
+                    <h5 class="fw-bold text-dark">📊 Scoreboard</h5>
+                    <p class="text-muted">View institution score matrix</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ route('admin.non_stage_scoreboard','sharia') }}" class="text-decoration-none">
+                <div class="card tm-card shadow-sm p-4">
+                    <h5 class="fw-bold text-dark">📝 Non-Stage Scoreboard</h5>
+                    <p class="text-muted">View non-stage ranking table</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+@endsection

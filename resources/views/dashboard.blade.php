@@ -1,96 +1,170 @@
-<x-guest-layout>
+@extends('layouts.app')
 
-    {{-- HEADER SECTION --}}
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
-        <div class="max-w-5xl mx-auto text-center">
-            <h1 class="text-5xl font-bold mb-4 tracking-wide">
-                SNEC Talents’ Meet
-            </h1>
-            <p class="text-xl opacity-90">
-                Explore Results • Events • Participants • Colleges
-            </p>
+@section('content')
 
-            <div class="mt-8">
-                <a href="/login"
-                   class="px-8 py-3 bg-white text-blue-700 font-semibold rounded shadow hover:bg-gray-100">
-                    Login
-                </a>
+<style>
+    body {
+        background-color: #E6F0FF !important;
+    }
+
+    .hero-title {
+        color: #012A4A;
+        font-weight: 900;
+        letter-spacing: 1px;
+        font-size: 2.4rem;
+        text-transform: uppercase;
+    }
+
+    .hero-highlight {
+        color: #F4A300;
+    }
+
+    .logo-img {
+        height: 130px;
+        border-radius: 8px;
+    }
+
+    .card-custom {
+        border-radius: 14px;
+        border: none;
+        transition: 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    /* STREAM BUTTON STYLE */
+    .stream-btn {
+        background: white;
+        color: #012A4A;
+        border: 2px solid #013A63;
+        font-weight: 700;
+        padding: 10px;
+        transition: .25s;
+        border-radius: 8px;
+    }
+
+    .stream-btn:hover {
+        background: #013A63;
+        color: #ffffff;
+        transform: scale(1.03);
+    }
+
+    /* LOGIN BUTTONS */
+    .login-btn {
+        font-weight: 600;
+        border-radius: 8px;
+        letter-spacing: .5px;
+        padding: 10px 24px;
+    }
+
+    .login-inst {
+        background: #013A63;
+        border-color: #013A63;
+    }
+    .login-inst:hover {
+        background:#012A4A;
+    }
+
+    .login-judge { background: #2ECC71; border-color:#27ae60; }
+    .login-judge:hover { background:#27ae60; }
+
+    .login-stage { background: #34495E; border-color:#2C3E50; }
+    .login-stage:hover { background:#2C3E50; }
+
+    .login-admin { background: #C0392B; border-color:#922B21; }
+    .login-admin:hover { background:#922B21; }
+
+    /* Card headers */
+    .header-dark {
+        background: #013A63;
+        color: white;
+    }
+
+    .header-yellow {
+        background: #F4A300;
+        color: #012A4A;
+        font-weight: 700;
+    }
+</style>
+
+
+<div class="text-center my-5">
+
+    {{-- TITLE --}}
+    <h1 class="hero-title mb-3">
+        Talents Meet <span class="hero-highlight">2025</span>  
+        <div style="font-size:18px; font-weight:600; margin-top:5px;">Second Edition</div>
+    </h1>
+
+    {{-- LOGO --}}
+    <img src="/logo.png" class="logo-img mb-4">
+
+    {{-- SUBTEXT --}}
+    <p class="lead" style="max-width: 680px; margin:auto; color:#013A63;">
+        Kerala’s Premier Multi-Stream Arts & Talent Festival – A Showcase of Excellence, Creativity, and Culture.
+    </p>
+</div>
+
+
+<div class="container">
+
+    {{-- 🔵 RESULTS SECTION --}}
+    <div class="col-md-10 mx-auto mb-4">
+        <div class="card shadow card-custom">
+            <div class="card-header header-dark text-center">
+                <h5 class="mb-0">View Stream Results</h5>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div class="row g-3">
+                    @foreach(['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'] as $s)
+                        <div class="col-md-4 col-lg-4">
+                            <a href="/results/{{ $s }}" class="btn stream-btn w-100">
+                                {{ ucwords(str_replace('_',' ', $s)) }}
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+
             </div>
         </div>
     </div>
 
-    {{-- STREAM RESULTS SECTION --}}
-    <div class="max-w-6xl mx-auto py-16 px-6">
-        <h2 class="text-3xl font-bold mb-6 text-center">View Results by Stream</h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {{-- 🟡 LOGIN SECTION --}}
+    <div class="col-md-10 mx-auto mb-5">
+        <div class="card shadow card-custom">
+            <div class="card-header header-yellow text-center">
+                <h5 class="mb-0">Login Sections</h5>
+            </div>
 
-            <a href="/results/sharia"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">Sharia</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
+            <div class="card-body d-flex gap-3 flex-wrap justify-content-center py-4">
 
-            <a href="/results/sharia_plus"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">Sharia Plus</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
+                <a href="/login" class="btn login-btn login-inst text-white">
+                    Institution Login
+                </a>
 
-            <a href="/results/she"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">SHE</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
+                <a href="/login" class="btn login-btn login-judge text-white">
+                    Judge Login
+                </a>
 
-            <a href="/results/she_plus"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">SHE Plus</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
+                <a href="/login" class="btn login-btn login-stage text-white">
+                    Stage Admin Login
+                </a>
 
-            <a href="/results/life"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">Life</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
+                <a href="/login" class="btn login-btn login-admin text-white">
+                    Admin Login
+                </a>
 
-            <a href="/results/life_plus"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">Life Plus</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
-
-            <a href="/results/bayyinath"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">Bayyinath</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
-
-            <a href="/results/general"
-               class="p-6 bg-white rounded shadow hover:shadow-lg transition text-center border">
-                <h3 class="text-xl font-bold mb-2">General</h3>
-                <p class="text-gray-600 text-sm">View Results</p>
-            </a>
-
+            </div>
         </div>
     </div>
 
-    {{-- ABOUT SECTION --}}
-    <div class="bg-gray-50 py-16">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-4">About the Event</h2>
-            <p class="text-gray-700 text-lg leading-relaxed">
-                SNEC Talents’ Meet aims to bring together the brightest students 
-                across multiple streams. This platform creates opportunities to showcase 
-                academic excellence, creativity, and leadership in a competitive environment.
-            </p>
-        </div>
-    </div>
+</div>
 
-    {{-- FOOTER --}}
-    <footer class="bg-gray-800 text-gray-300 py-6 text-center">
-        <p class="text-sm">© {{ date('Y') }} SNEC Talents’ Meet. All Rights Reserved.</p>
-    </footer>
-
-</x-guest-layout>
+@endsection
