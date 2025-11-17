@@ -8,6 +8,10 @@ use App\Models\Registration;
 use App\Models\JudgeScore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+// add at top of file with other use statements
+use App\Models\User;
+use App\Models\Student;
+
 
 class ResultsController extends Controller
 {
@@ -429,6 +433,90 @@ public function nonStageScoreboard(Request $request, $stream)
         'stream', 'eventList', 'eventId', 'scoreboard', 'selectedEvent'
     ));
 }
+public function eventsDetails()
+{
+    $streams = ['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'];
+
+    $events = Event::orderBy('stream')->orderBy('name')->get()
+                ->groupBy('stream');
+
+    return view('admin.details.events_by_stream', compact('events','streams'));
+}
+public function institutionsDetails()
+{
+    $institutions = \App\Models\User::where('role','institution')
+                    ->orderBy('stream')
+                    ->orderBy('name')
+                    ->get()
+                    ->groupBy('stream');
+
+    return view('admin.details.institutions_by_stream', compact('institutions'));
+}
+public function participantsDetails()
+{
+    $streams = ['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'];
+
+    $institutions = \App\Models\User::where('role','institution')
+                    ->with(['students.registrations.event'])
+                    ->orderBy('stream')
+                    ->orderBy('name')
+                    ->get()
+                    ->groupBy('stream');
+
+    return view('admin.details.participants_by_stream', compact('institutions','streams'));
+}
+/**
+ * Show events grouped by stream (for Admin -> Total Events card)
+ */
+public function eventsByStream()
+{
+    // fetch events grouped by stream
+    $events = Event::orderBy('stream')
+                   ->orderBy('name')
+                   ->get()
+                   ->groupBy('stream');
+
+    return view('admin.details.events_by_stream', compact('events'));
+}
+
+/**
+ * Show institutions grouped by stream (for Admin -> Total Institutions card)
+ */
+public function institutionsByStream()
+{
+    $institutions = User::where('role', 'institution')
+                        ->orderBy('stream')
+                        ->orderBy('name')
+                        ->get()
+                        ->groupBy('stream');
+
+    return view('admin.details.institutions_by_stream', compact('institutions'));
+}
+
+/**
+ * Show participants grouped by stream -> institution -> students (for Admin -> Total Participants)
+ */
+public function participantsByStream()
+{
+    // load institutions with their students and each student's registrations with event
+    $institutions = User::where('role', 'institution')
+                        ->with([
+                            'students.registrations.event' => function($q) {
+                                $q->select('id','name','category','stream','stage_type');
+                            },
+                            'students' => function($q) {
+                                $q->select('id','uid','name','institution_id');
+                            }
+                        ])
+                        ->orderBy('stream')
+                        ->orderBy('name')
+                        ->get()
+                        ->groupBy('stream');
+
+    return view('admin.details.participants_by_stream', compact('institutions'));
+}
+
+
 
 
 

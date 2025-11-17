@@ -146,8 +146,14 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
     Route::get('scoreboard/{stream}', [ResultsController::class, 'scoreboard'])->name('admin.scoreboard');
     Route::get('non-stage/{stream}',  [ResultsController::class, 'nonStageScoreboard'])->name('admin.non_stage_scoreboard');
 
+    
+    Route::get('/details/events', [ResultsController::class, 'eventsByStream'])->name('admin.details.events');
+    Route::get('/details/institutions', [ResultsController::class, 'institutionsByStream'])->name('admin.details.institutions');
+    Route::get('/details/participants', [ResultsController::class, 'participantsByStream'])->name('admin.details.participants');
 
 });
+
+
 
 
 

@@ -32,33 +32,43 @@
     </div>
 
     {{-- QUICK STATS --}}
-    <div class="row g-4 mb-5">
+<div class="row g-4 mb-5">
 
-        <div class="col-md-4">
+    {{-- ⭐ TOTAL EVENTS --}}
+    <div class="col-md-4">
+        <a href="{{ route('admin.details.events') }}" class="text-decoration-none text-dark">
             <div class="card tm-card p-4 text-center shadow-sm">
                 <div class="tm-icon mb-2">🎭</div>
                 <h4 class="fw-bold">Total Events</h4>
                 <p class="fs-4 text-primary">{{ \App\Models\Event::count() }}</p>
             </div>
-        </div>
+        </a>
+    </div>
 
-        <div class="col-md-4">
+    {{-- ⭐ TOTAL INSTITUTIONS --}}
+    <div class="col-md-4">
+        <a href="{{ route('admin.details.institutions') }}" class="text-decoration-none text-dark">
             <div class="card tm-card p-4 text-center shadow-sm">
                 <div class="tm-icon mb-2">🏫</div>
                 <h4 class="fw-bold">Total Institutions</h4>
                 <p class="fs-4 text-primary">{{ \App\Models\User::where('role','institution')->count() }}</p>
             </div>
-        </div>
+        </a>
+    </div>
 
-        <div class="col-md-4">
+    {{-- ⭐ TOTAL PARTICIPANTS --}}
+    <div class="col-md-4">
+        <a href="{{ route('admin.details.participants') }}" class="text-decoration-none text-dark">
             <div class="card tm-card p-4 text-center shadow-sm">
                 <div class="tm-icon mb-2">🧍</div>
                 <h4 class="fw-bold">Total Participants</h4>
                 <p class="fs-4 text-primary">{{ \App\Models\Student::count() }}</p>
             </div>
-        </div>
-
+        </a>
     </div>
+
+</div>
+
 
     {{-- ACTION CARD GRID --}}
     <h3 class="section-title mb-3">Actions</h3>

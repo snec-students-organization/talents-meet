@@ -61,13 +61,8 @@
         padding: 10px 24px;
     }
 
-    .login-inst {
-        background: #013A63;
-        border-color: #013A63;
-    }
-    .login-inst:hover {
-        background:#012A4A;
-    }
+    .login-inst { background: #013A63; border-color: #013A63; }
+    .login-inst:hover { background:#012A4A; }
 
     .login-judge { background: #2ECC71; border-color:#27ae60; }
     .login-judge:hover { background:#27ae60; }
@@ -78,7 +73,6 @@
     .login-admin { background: #C0392B; border-color:#922B21; }
     .login-admin:hover { background:#922B21; }
 
-    /* Card headers */
     .header-dark {
         background: #013A63;
         color: white;
@@ -88,6 +82,38 @@
         background: #F4A300;
         color: #012A4A;
         font-weight: 700;
+    }
+
+    /* STATS CARDS */
+    .stats-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        transition: .3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .stats-icon {
+        font-size: 38px;
+        color: #013A63;
+        margin-bottom: 10px;
+    }
+
+    .stats-number {
+        font-weight: 900;
+        color: #013A63;
+        font-size: 32px;
+    }
+
+    .stats-label {
+        font-size: 15px;
+        color: #012A4A;
+        font-weight: 600;
     }
 </style>
 
@@ -112,6 +138,38 @@
 
 <div class="container">
 
+    {{-- 🔥 NEW STATS SECTION --}}
+    <div class="col-md-10 mx-auto mb-5">
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="stats-card shadow-sm">
+                    <div class="stats-icon">🎭</div>
+                    <div class="stats-number">{{ \App\Models\Event::count() }}</div>
+                    <div class="stats-label">Total Events</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stats-card shadow-sm">
+                    <div class="stats-icon">🏫</div>
+                    <div class="stats-number">{{ \App\Models\User::where('role','institution')->count() }}</div>
+                    <div class="stats-label">Total Institutions</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stats-card shadow-sm">
+                    <div class="stats-icon">🧍</div>
+                    <div class="stats-number">{{ \App\Models\Student::count() }}</div>
+                    <div class="stats-label">Total Participants</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
     {{-- 🔵 RESULTS SECTION --}}
     <div class="col-md-10 mx-auto mb-4">
         <div class="card shadow card-custom">
@@ -120,7 +178,6 @@
             </div>
 
             <div class="card-body p-4">
-
                 <div class="row g-3">
                     @foreach(['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'] as $s)
                         <div class="col-md-4 col-lg-4">
@@ -130,8 +187,8 @@
                         </div>
                     @endforeach
                 </div>
-
             </div>
+
         </div>
     </div>
 
@@ -145,21 +202,10 @@
 
             <div class="card-body d-flex gap-3 flex-wrap justify-content-center py-4">
 
-                <a href="/login" class="btn login-btn login-inst text-white">
-                    Institution Login
-                </a>
-
-                <a href="/login" class="btn login-btn login-judge text-white">
-                    Judge Login
-                </a>
-
-                <a href="/login" class="btn login-btn login-stage text-white">
-                    Stage Admin Login
-                </a>
-
-                <a href="/login" class="btn login-btn login-admin text-white">
-                    Admin Login
-                </a>
+                <a href="/login" class="btn login-btn login-inst text-white">Institution Login</a>
+                <a href="/login" class="btn login-btn login-judge text-white">Judge Login</a>
+                <a href="/login" class="btn login-btn login-stage text-white">Stage Admin Login</a>
+                <a href="/login" class="btn login-btn login-admin text-white">Admin Login</a>
 
             </div>
         </div>
