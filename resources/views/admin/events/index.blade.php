@@ -1,230 +1,233 @@
-<x-app-layout>
-    <div class="max-w-6xl mx-auto p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">
-            All Events by Stream, Stage Type, and Category
-        </h1>
+@extends('layouts.app')
 
-        @if(session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
+@section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
+    {{-- HEADER --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Event Management</h1>
+            <p class="text-slate-500">Overview of all events categorized by stream and stage type.</p>
+        </div>
+
+        {{-- CREATE EVENT BUTTON --}}
+        <a href="{{ route('admin.events.create') }}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 
+                  text-white text-sm font-semibold rounded-lg shadow-sm transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                 viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16m8-8H4"/>
+            </svg>
+            Create Event
+        </a>
+    </div>
+
+    {{-- SUCCESS MESSAGE --}}
+    @if(session('success'))
+        <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg border border-emerald-200 text-sm font-medium">
+            ✅ {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- NAVIGATION TABS --}}
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <a href="{{ route('admin.events.index') }}"
+               class="{{ !request('type') ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                All Events
+            </a>
+            <a href="{{ route('admin.events.index', ['type' => 'stage']) }}"
+               class="{{ request('type') == 'stage' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Stage Events
+            </a>
+            <a href="{{ route('admin.events.index', ['type' => 'non_stage']) }}"
+               class="{{ request('type') == 'non_stage' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Off-Stage Events
+            </a>
+        </nav>
+    </div>
+
+    @php
+        $streams = ['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath'];
+        $categories = ['A','B','C','D'];
+    @endphp
+
+    <div class="space-y-8">
+    @foreach($streams as $stream)
         @php
-            $streams = ['sharia', 'sharia_plus', 'she', 'she_plus', 'life', 'life_plus', 'bayyinath'];
-            $categories = ['A', 'B', 'C', 'D'];
+            $streamEvents = $events->where('stream',$stream);
+            $stageEvents  = $streamEvents->where('stage_type','stage');
+            $nonStage     = $streamEvents->where('stage_type','non_stage');
         @endphp
 
-        @foreach($streams as $stream)
-            @php
-                $streamEvents = $events->where('stream', $stream);
-                $stageEvents = $streamEvents->where('stage_type', 'stage');
-                $nonStageEvents = $streamEvents->where('stage_type', 'non_stage');
-            @endphp
+        @if($streamEvents->isNotEmpty())
 
-            @if($streamEvents->isNotEmpty())
-                <div class="mb-12">
-                    <h2 class="text-2xl font-semibold capitalize text-blue-700 mb-4 border-b pb-2">
-                        {{ str_replace('_', ' ', $stream) }} Stream
-                    </h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
-                    {{-- Stage Events Table --}}
-                    @if($stageEvents->isNotEmpty())
-                        <div class="mb-8" x-data="{ selectedCategory: '' }">
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="text-xl font-semibold text-green-700">🎭 Stage Events</h3>
-                                <div class="flex items-center space-x-2">
-                                    <select x-model="selectedCategory" class="border rounded px-2 py-1">
-                                        <option value="">All Categories</option>
-                                        @foreach($categories as $cat)
-                                            <option value="{{ $cat }}">{{ $cat }}</option>
-                                        @endforeach
-                                    </select>
+            {{-- STREAM HEADER --}}
+            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-white text-lg font-bold uppercase tracking-wider">
+                    {{ str_replace('_',' ',$stream) }} Stream
+                </h3>
+                <span class="bg-white/10 text-white text-xs px-2 py-1 rounded-md">
+                    {{ $streamEvents->count() }} Events
+                </span>
+            </div>
 
-                                    <button onclick="exportTableToExcel('{{ $stream }}-stage')"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                                        Excel
-                                    </button>
-                                    <button onclick="exportTableToPDF('{{ $stream }}-stage')"
-                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                        PDF
-                                    </button>
-                                </div>
-                            </div>
+            <div class="p-6 space-y-8">
 
-                            <table id="table-{{ $stream }}-stage" class="min-w-full bg-white rounded-lg shadow mb-4">
-                                <thead>
-                                    <tr class="bg-gray-100 text-left text-gray-700">
-                                        <th class="p-3">#</th>
-                                        <th class="p-3">Event Name</th>
-                                        <th class="p-3">Category</th>
-                                        <th class="p-3">Type</th>
-                                        <th class="p-3">Level</th>
-                                        <th class="p-3">Allowed Streams</th>
-                                        <th class="p-3">Max Participants</th>
-                                        <th class="p-3">Max Entries / Institution</th>
-                                        <th class="p-3">Stage Assignment</th>
-                                        <th class="p-3">Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($stageEvents as $index => $event)
-                                        <tr class="border-b hover:bg-gray-50"
-                                            x-show="selectedCategory === '' || selectedCategory === '{{ $event->category }}'">
-                                            <td class="p-3">{{ $index + 1 }}</td>
-                                            <td class="p-3 font-semibold">{{ $event->name }}</td>
-                                            <td class="p-3">{{ $event->category }}</td>
-                                            <td class="p-3 capitalize">{{ $event->type }}</td>
-                                            <td class="p-3 capitalize">{{ $event->level ?? '-' }}</td>
-                                            <td class="p-3">
-                                                @if($event->allowed_streams)
-                                                    @foreach(json_decode($event->allowed_streams) as $allowed)
-                                                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs mr-1">
-                                                            {{ str_replace('_', ' ', ucfirst($allowed)) }}
-                                                        </span>
-                                                    @endforeach
-                                                @else
-                                                    <span class="text-gray-400">All Streams</span>
-                                                @endif
-                                            </td>
-                                            <td class="p-3">{{ $event->max_participants ?? '-' }}</td>
-                                            <td class="p-3">{{ $event->max_institution_entries ?? 1 }}</td>
+                {{-- 🎭 STAGE EVENTS --}}
+                @if($stageEvents->isNotEmpty())
+                <div x-data="{ selectedCategory:'' }">
 
-                                            {{-- ✅ Stage Assignment --}}
-                                            <td class="p-3">
-                                                <form action="{{ route('admin.events.assignStage', $event->id) }}" method="POST" class="flex flex-col space-y-2">
-    @csrf
-    <div class="flex items-center space-x-2">
-        <select name="stage_number" class="border rounded p-1 text-sm">
-            <option value="">Select Stage</option>
-            @for($i = 1; $i <= 5; $i++)
-                <option value="{{ $i }}" {{ $event->stage_number == $i ? 'selected' : '' }}>
-                    Stage {{ $i }}
-                </option>
-            @endfor
-        </select>
-        <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">
-            Assign
-        </button>
-    </div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h4 class="text-lg font-bold text-slate-700 flex items-center gap-2">
+                            <span class="bg-purple-100 text-purple-600 p-1.5 rounded-lg text-xl">🎭</span>
+                            Stage Events
+                        </h4>
 
-    @if($event->stage_number)
-        <span class="text-sm text-green-700 ml-1">
-            ✅ Assigned: <strong>Stage {{ $event->stage_number }}</strong>
-        </span>
-    @endif
-</form>
+                        <div class="flex items-center gap-2">
+                            <select x-model="selectedCategory"
+                                class="text-sm border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">All Categories</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat }}">{{ $cat }}</option>
+                                @endforeach
+                            </select>
 
-                                            </td>
+                            <button class="px-3 py-2 bg-white border border-gray-300 text-slate-600 rounded-lg text-sm"
+                                onclick="exportTableToExcel('{{ $stream }}-stage')">
+                                Excel
+                            </button>
 
-                                            <td class="p-3">{{ $event->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                            <button class="px-3 py-2 bg-white border border-gray-300 text-red-600 rounded-lg text-sm"
+                                onclick="exportTableToPDF('{{ $stream }}-stage')">
+                                PDF
+                            </button>
                         </div>
-                    @endif
+                    </div>
 
-                    {{-- Non-Stage Events --}}
-                    @if($nonStageEvents->isNotEmpty())
-                        <div class="mb-8" x-data="{ selectedCategory: '' }">
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="text-xl font-semibold text-purple-700">🧾 Non-Stage Events</h3>
-                                <div class="flex items-center space-x-2">
-                                    <select x-model="selectedCategory" class="border rounded px-2 py-1">
-                                        <option value="">All Categories</option>
-                                        @foreach($categories as $cat)
-                                            <option value="{{ $cat }}">{{ $cat }}</option>
-                                        @endforeach
-                                    </select>
-
-                                    <button onclick="exportTableToExcel('{{ $stream }}-nonstage')"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                                        Excel
-                                    </button>
-                                    <button onclick="exportTableToPDF('{{ $stream }}-nonstage')"
-                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                        PDF
-                                    </button>
-                                </div>
-                            </div>
-
-                            <table id="table-{{ $stream }}-nonstage" class="min-w-full bg-white rounded-lg shadow mb-4">
-                                <thead>
-                                    <tr class="bg-gray-100 text-left text-gray-700">
-                                        <th class="p-3">#</th>
-                                        <th class="p-3">Event Name</th>
-                                        <th class="p-3">Category</th>
-                                        <th class="p-3">Type</th>
-                                        <th class="p-3">Level</th>
-                                        <th class="p-3">Allowed Streams</th>
-                                        <th class="p-3">Max Participants</th>
-                                        <th class="p-3">Max Entries / Institution</th>
-                                        <th class="p-3">Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($nonStageEvents as $index => $event)
-                                        <tr class="border-b hover:bg-gray-50"
-                                            x-show="selectedCategory === '' || selectedCategory === '{{ $event->category }}'">
-                                            <td class="p-3">{{ $index + 1 }}</td>
-                                            <td class="p-3 font-semibold">{{ $event->name }}</td>
-                                            <td class="p-3">{{ $event->category }}</td>
-                                            <td class="p-3 capitalize">{{ $event->type }}</td>
-                                            <td class="p-3 capitalize">{{ $event->level ?? '-' }}</td>
-                                            <td class="p-3">
-                                                @if($event->allowed_streams)
-                                                    @foreach(json_decode($event->allowed_streams) as $allowed)
-                                                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs mr-1">
-                                                            {{ str_replace('_', ' ', ucfirst($allowed)) }}
-                                                        </span>
-                                                    @endforeach
-                                                @else
-                                                    <span class="text-gray-400">All Streams</span>
-                                                @endif
-                                            </td>
-                                            <td class="p-3">{{ $event->max_participants ?? '-' }}</td>
-                                            <td class="p-3">{{ $event->max_institution_entries ?? 1 }}</td>
-                                            <td class="p-3">{{ $event->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table id="table-{{ $stream }}-stage" class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3">ID</th>
+                                    <th class="px-4 py-3">Event Name</th>
+                                    <th class="px-4 py-3">Cat</th>
+                                    <th class="px-4 py-3">Type</th>
+                                    <th class="px-4 py-3">Level</th>
+                                    <th class="px-4 py-3">Allowed</th>
+                                    <th class="px-4 py-3">Slot</th>
+                                    <th class="px-4 py-3">Per Inst.</th>
+                                    <th class="px-4 py-3">Assign Stage</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y bg-white">
+                                @foreach($stageEvents as $i=>$event)
+                                <tr x-show="selectedCategory==='' || selectedCategory==='{{ $event->category }}'">
+                                    <td class="px-4 py-3">{{ $i+1 }}</td>
+                                    <td class="px-4 py-3 font-medium">{{ $event->name }}</td>
+                                    <td class="px-4 py-3">{{ $event->category }}</td>
+                                    <td class="px-4 py-3 text-xs">{{ $event->type }}</td>
+                                    <td class="px-4 py-3 text-xs">{{ $event->level ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-xs">Allowed</td>
+                                    <td class="px-4 py-3">{{ $event->max_participants ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $event->max_institution_entries ?? 1 }}</td>
+                                    <td class="px-4 py-3">
+                                        <form action="{{ route('admin.events.assignStage',$event->id) }}" method="POST">
+                                            @csrf
+                                            <select name="stage_number" class="text-xs border-gray-300 rounded">
+                                                <option value="">Select</option>
+                                                @for($s=1;$s<=5;$s++)
+                                                    <option value="{{ $s }}" {{ $event->stage_number==$s?'selected':'' }}>
+                                                        Stage {{ $s }}
+                                                    </option>
+                                                @endfor
+                                            </select>
+                                            <button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs ml-1">
+                                                Save
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            @endif
-        @endforeach
+                @endif
+
+                {{-- 📝 NON-STAGE EVENTS --}}
+                @if($nonStage->isNotEmpty())
+                <div x-data="{ selectedCategory:'' }">
+
+                    <h4 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <span class="bg-amber-100 text-amber-600 p-1.5 rounded-lg text-xl">📝</span>
+                        Non-Stage Events
+                    </h4>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table id="table-{{ $stream }}-nonstage" class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-amber-50">
+                                <tr>
+                                    <th class="px-4 py-3">ID</th>
+                                    <th class="px-4 py-3">Event Name</th>
+                                    <th class="px-4 py-3">Cat</th>
+                                    <th class="px-4 py-3">Type</th>
+                                    <th class="px-4 py-3">Level</th>
+                                    <th class="px-4 py-3">Allowed</th>
+                                    <th class="px-4 py-3">Slot</th>
+                                    <th class="px-4 py-3">Per Inst.</th>
+                                    <th class="px-4 py-3">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y bg-white">
+                                @foreach($nonStage as $i=>$event)
+                                <tr>
+                                    <td class="px-4 py-3">{{ $i+1 }}</td>
+                                    <td class="px-4 py-3 font-medium">{{ $event->name }}</td>
+                                    <td class="px-4 py-3">{{ $event->category }}</td>
+                                    <td class="px-4 py-3 text-xs">{{ $event->type }}</td>
+                                    <td class="px-4 py-3 text-xs">{{ $event->level ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-xs">Allowed</td>
+                                    <td class="px-4 py-3">{{ $event->max_participants ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $event->max_institution_entries ?? 1 }}</td>
+                                    <td class="px-4 py-3 text-xs">{{ $event->created_at->format('d M Y') }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
+            </div>
+        </div>
+        @endif
+    @endforeach
     </div>
 
-    {{-- Excel + PDF Export --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+</div>
 
-    <script>
-        function exportTableToExcel(id) {
-            const table = document.getElementById(`table-${id}`);
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Events" });
-            XLSX.writeFile(wb, `${id}_events.xlsx`);
-        }
+{{-- EXPORT SCRIPTS --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
 
-        function exportTableToPDF(id) {
-            const table = document.getElementById(`table-${id}`);
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'pt', 'a4');
-            doc.setFontSize(14);
-            doc.text(`Event List - ${id.replace('-', ' ').toUpperCase()}`, 40, 40);
-            doc.autoTable({
-                html: table,
-                startY: 60,
-                styles: { fontSize: 8, cellPadding: 3 },
-                headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255] },
-                alternateRowStyles: { fillColor: [245, 245, 245] },
-                theme: 'striped'
-            });
-            doc.save(`${id}_events.pdf`);
-        }
-    </script>
-</x-app-layout>
+<script>
+function exportTableToExcel(id){
+    let table=document.getElementById(`table-${id}`);
+    let wb=XLSX.utils.table_to_book(table,{sheet:"Events"});
+    XLSX.writeFile(wb,`${id}_events.xlsx`);
+}
+
+function exportTableToPDF(id){
+    let table=document.getElementById(`table-${id}`);
+    let { jsPDF } = window.jspdf;
+    let doc=new jsPDF('l','pt','a4');
+    doc.autoTable({ html: table, startY:40 });
+    doc.save(`${id}_events.pdf`);
+}
+</script>
+@endsection

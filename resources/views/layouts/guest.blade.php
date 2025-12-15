@@ -1,96 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-100">
 <head>
-    <meta charset="UTF-8">
-    <title>Talents Meet 2025</title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Bootstrap --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{{ config('app.name', 'Talents Meet 2025') }}</title>
 
-    <style>
-        body {
-            background: linear-gradient(135deg, #013A63 0%, #012A4A 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-        }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700,800&display=swap" rel="stylesheet" />
 
-        .auth-wrapper {
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-        }
-
-        .auth-logo img {
-            height: 85px;
-        }
-
-        .auth-title {
-            text-align: center;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            color: #F4A300;
-            font-weight: 800;
-            font-size: 26px;
-            letter-spacing: 0.6px;
-        }
-
-        .auth-card {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-            width: 100%;
-        }
-
-        @media (max-width: 480px) {
-            .auth-logo img {
-                height: 70px;
-            }
-
-            .auth-title {
-                font-size: 22px;
-            }
-
-            .auth-card {
-                padding: 20px;
-            }
-        }
-    </style>
-
-    @stack('styles')
-
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+<body class="font-sans text-slate-900 antialiased h-full flex flex-col justify-center items-center">
 
-<body>
-
-    <div class="auth-wrapper">
-
-        {{-- LOGO --}}
-        <div class="auth-logo text-center mb-2">
-            <img src="/logo.png" alt="Talents Meet Logo" class="img-fluid">
+    <div class="w-full max-w-md px-6 py-8">
+        
+        <div class="text-center mb-6">
+            <a href="/" class="inline-block">
+                <img src="/logo.png" class="h-20 w-auto mx-auto mb-4">
+            </a>
+            <h2 class="text-2xl font-bold text-slate-800">Talents Meet <span class="text-blue-600">2025</span></h2>
         </div>
 
-        {{-- TITLE --}}
-        <h2 class="auth-title">Talents Meet 2025</h2>
-
-        {{-- AUTH CARD --}}
-        <div class="auth-card">
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-8">
             @yield('content')
         </div>
-
     </div>
-
-    {{-- Bootstrap JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    @stack('scripts')
-
 </body>
 </html>

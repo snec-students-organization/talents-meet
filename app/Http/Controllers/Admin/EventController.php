@@ -11,10 +11,16 @@ class EventController extends Controller
     /**
      * Display a listing of all events.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Show all events with latest first
-        $events = Event::latest()->get();
+        $query = Event::latest();
+
+        if ($request->has('type') && in_array($request->type, ['stage', 'non_stage'])) {
+            $query->where('stage_type', $request->type);
+        }
+
+        $events = $query->get();
         return view('admin.events.index', compact('events'));
     }
 

@@ -1,216 +1,98 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="space-y-10 pb-10">
 
-<style>
-    body {
-        background-color: #E6F0FF !important;
-    }
+    {{-- HERO SECTION --}}
+    <div class="text-center pt-8 pb-6 border-b border-gray-200">
+        {{-- LOGO --}}
+        <img src="/logo.png" class="h-24 md:h-28 mx-auto mb-4">
 
-    .hero-title {
-        color: #012A4A;
-        font-weight: 900;
-        letter-spacing: 1px;
-        font-size: 2.4rem;
-        text-transform: uppercase;
-    }
+        {{-- TITLE --}}
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-2">
+            Talents Meet <span class="text-blue-600">2025</span>
+        </h1>
+        <p class="text-lg text-slate-600 font-medium">Second Edition</p>
+        
+        <p class="mt-4 max-w-2xl mx-auto text-slate-500">
+            Kerala’s Premier Multi-Stream Arts & Talent Festival.
+        </p>
+    </div>
 
-    .hero-highlight {
-        color: #F4A300;
-    }
+    {{-- STATS SECTION --}}
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-    .logo-img {
-        height: 130px;
-        border-radius: 8px;
-    }
-
-    .card-custom {
-        border-radius: 14px;
-        border: none;
-        transition: 0.3s ease;
-        overflow: hidden;
-    }
-
-    .card-custom:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
-
-    /* STREAM BUTTON STYLE */
-    .stream-btn {
-        background: white;
-        color: #012A4A;
-        border: 2px solid #013A63;
-        font-weight: 700;
-        padding: 10px;
-        transition: .25s;
-        border-radius: 8px;
-    }
-
-    .stream-btn:hover {
-        background: #013A63;
-        color: #ffffff;
-        transform: scale(1.03);
-    }
-
-    /* LOGIN BUTTONS */
-    .login-btn {
-        font-weight: 600;
-        border-radius: 8px;
-        letter-spacing: .5px;
-        padding: 10px 24px;
-    }
-
-    .login-inst { background: #013A63; border-color: #013A63; }
-    .login-inst:hover { background:#012A4A; }
-
-    .login-judge { background: #2ECC71; border-color:#27ae60; }
-    .login-judge:hover { background:#27ae60; }
-
-    .login-stage { background: #34495E; border-color:#2C3E50; }
-    .login-stage:hover { background:#2C3E50; }
-
-    .login-admin { background: #C0392B; border-color:#922B21; }
-    .login-admin:hover { background:#922B21; }
-
-    .header-dark {
-        background: #013A63;
-        color: white;
-    }
-
-    .header-yellow {
-        background: #F4A300;
-        color: #012A4A;
-        font-weight: 700;
-    }
-
-    /* STATS CARDS */
-    .stats-card {
-        background: white;
-        border-radius: 14px;
-        padding: 20px;
-        text-align: center;
-        transition: .3s ease;
-    }
-
-    .stats-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-
-    .stats-icon {
-        font-size: 38px;
-        color: #013A63;
-        margin-bottom: 10px;
-    }
-
-    .stats-number {
-        font-weight: 900;
-        color: #013A63;
-        font-size: 32px;
-    }
-
-    .stats-label {
-        font-size: 15px;
-        color: #012A4A;
-        font-weight: 600;
-    }
-</style>
-
-
-<div class="text-center my-5">
-
-    {{-- TITLE --}}
-    <h1 class="hero-title mb-3">
-        Talents Meet <span class="hero-highlight">2025</span>  
-        <div style="font-size:18px; font-weight:600; margin-top:5px;">Second Edition</div>
-    </h1>
-
-    {{-- LOGO --}}
-    <img src="/logo.png" class="logo-img mb-4">
-
-    {{-- SUBTEXT --}}
-    <p class="lead" style="max-width: 680px; margin:auto; color:#013A63;">
-        Kerala’s Premier Multi-Stream Arts & Talent Festival – A Showcase of Excellence, Creativity, and Culture.
-    </p>
-</div>
-
-
-<div class="container">
-
-    {{-- 🔥 NEW STATS SECTION --}}
-    <div class="col-md-10 mx-auto mb-5">
-        <div class="row g-4">
-
-            <div class="col-md-4">
-                <div class="stats-card shadow-sm">
-                    <div class="stats-icon">🎭</div>
-                    <div class="stats-number">{{ \App\Models\Event::count() }}</div>
-                    <div class="stats-label">Total Events</div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-4 bg-purple-50 rounded-lg text-2xl">🎭</div>
+                <div>
+                    <div class="text-3xl font-bold text-slate-800">{{ \App\Models\Event::count() }}</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Events</div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="stats-card shadow-sm">
-                    <div class="stats-icon">🏫</div>
-                    <div class="stats-number">{{ \App\Models\User::where('role','institution')->count() }}</div>
-                    <div class="stats-label">Total Institutions</div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg text-2xl">🏫</div>
+                <div>
+                    <div class="text-3xl font-bold text-slate-800">{{ \App\Models\User::where('role','institution')->count() }}</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Institutions</div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="stats-card shadow-sm">
-                    <div class="stats-icon">🧍</div>
-                    <div class="stats-number">{{ \App\Models\Student::count() }}</div>
-                    <div class="stats-label">Total Participants</div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="p-4 bg-amber-50 rounded-lg text-2xl">🧍</div>
+                <div>
+                    <div class="text-3xl font-bold text-slate-800">{{ \App\Models\Student::count() }}</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Participants</div>
                 </div>
             </div>
 
         </div>
     </div>
 
-
-    {{-- 🔵 RESULTS SECTION --}}
-    <div class="col-md-10 mx-auto mb-4">
-        <div class="card shadow card-custom">
-            <div class="card-header header-dark text-center">
-                <h5 class="mb-0">View Stream Results</h5>
+    {{-- RESULTS SECTION --}}
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-slate-50 border-b border-gray-200 px-6 py-4">
+                <h3 class="text-lg font-bold text-slate-800">Stream Results</h3>
             </div>
-
-            <div class="card-body p-4">
-                <div class="row g-3">
+            
+            <div class="p-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     @foreach(['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath','general'] as $s)
-                        <div class="col-md-4 col-lg-4">
-                            <a href="/results/{{ $s }}" class="btn stream-btn w-100">
+                        <a href="/results/{{ $s }}" class="block p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all text-center group">
+                            <span class="block text-sm text-slate-400 uppercase tracking-wider mb-1 text-[10px]">Stream</span>
+                            <span class="font-semibold text-slate-700 group-hover:text-blue-600">
                                 {{ ucwords(str_replace('_',' ', $s)) }}
-                            </a>
-                        </div>
+                            </span>
+                        </a>
                     @endforeach
                 </div>
             </div>
-
         </div>
     </div>
 
-
-    {{-- 🟡 LOGIN SECTION --}}
-    <div class="col-md-10 mx-auto mb-5">
-        <div class="card shadow card-custom">
-            <div class="card-header header-yellow text-center">
-                <h5 class="mb-0">Login Sections</h5>
-            </div>
-
-            <div class="card-body d-flex gap-3 flex-wrap justify-content-center py-4">
-
-                <a href="/login" class="btn login-btn login-inst text-white">Institution Login</a>
-                <a href="/login" class="btn login-btn login-judge text-white">Judge Login</a>
-                <a href="/login" class="btn login-btn login-stage text-white">Stage Admin Login</a>
-                <a href="/login" class="btn login-btn login-admin text-white">Admin Login</a>
-
-            </div>
+    {{-- LOGIN SECTION --}}
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h3 class="text-slate-400 uppercase tracking-widest font-semibold text-xs mb-4">Login Portals</h3>
+        
+        <div class="inline-flex flex-wrap justify-center gap-3">
+            @php
+                $logins = [
+                    ['name' => 'Institution', 'class' => 'bg-blue-600 hover:bg-blue-700 text-white'],
+                    ['name' => 'Judge', 'class' => 'bg-emerald-600 hover:bg-emerald-700 text-white'],
+                    ['name' => 'Stage Admin', 'class' => 'bg-slate-600 hover:bg-slate-700 text-white'],
+                    ['name' => 'Admin', 'class' => 'bg-slate-800 hover:bg-slate-900 text-white'],
+                ];
+            @endphp
+            
+            @foreach($logins as $login)
+            <a href="/login" class="px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors {{ $login['class'] }}">
+                {{ $login['name'] }} Login
+            </a>
+            @endforeach
         </div>
     </div>
 
 </div>
-
 @endsection
