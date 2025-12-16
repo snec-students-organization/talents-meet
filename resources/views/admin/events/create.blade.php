@@ -169,11 +169,11 @@
             type: '',
             stream: '',
             get showLevel() {
-                // Return true if type is NOT general AND stream is sharia OR she
-                // Adjust logic as needed based on exact requirements
-                // "Level" field logic from original code:
-                return this.type !== 'general' &&
-                       (this.stream === 'sharia' || this.stream === 'she');
+                // Show level for all streams except 'general' type or 'bayyinath'/'life' if they don't have levels
+                // Based on seeder: sharia, sharia_plus, she, she_plus, life_plus have levels.
+                // life and bayyinath do not.
+                if (this.type === 'general') return false;
+                return ['sharia', 'sharia_plus', 'she', 'she_plus', 'life_plus'].includes(this.stream);
             }
         }
     }
