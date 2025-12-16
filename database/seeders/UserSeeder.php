@@ -51,30 +51,30 @@ class UserSeeder extends Seeder
                 'levels' => ['Sanaviyya Ulya', 'Bakalooriyya', 'Majestar'], // Full access
             ],
             [
-                'name' => 'shamsul ulama Sharia College',
+                'name' => 'shamsul ulama Sharia plus College',
                 'email' => 'sharddia@college.com',
-                'stream' => 'sharia',
+                'stream' => 'sharia plus',
                 'password' => 'sharia123',
                 'levels' => ['Sanaviyya Ulya'], // Only Sanaviyya
             ],
             [
-                'name' => 'liwa ul huda Sharia College',
+                'name' => 'liwa ul huda She College',
                 'email' => 'shardzddzia@college.com',
-                'stream' => 'sharia',
+                'stream' => 'she',
                 'password' => 'sharia123',
                 'levels' => ['Bakalooriyya', 'Majestar'], // Higher levels only
             ],
              [
-                'name' => 'kmmec Sharia College',
+                'name' => 'kmmec She plus College',
                 'email' => 'shardzddppppzia@college.com',
-                'stream' => 'sharia',
+                'stream' => 'she plus',
                 'password' => 'sharia123',
                 'levels' => ['Sanaviyya Ulya', 'Majestar'],
             ],
             [
-                'name' => 'manar SHE College',
+                'name' => 'manar life plus College',
                 'email' => 'she@college.com',
-                'stream' => 'she',
+                'stream' => 'life plus',
                 'password' => 'she123',
                 'levels' => ['Sanaviyya Ulya'], 
             ],
