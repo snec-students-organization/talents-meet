@@ -32,7 +32,19 @@ class EventRegistrationController extends Controller
         }]);
 
         if ($type === 'general') {
-            $query->where('type', 'general');
+            $query->where('type', 'general')
+                  ->where(function($q) use ($stream) {
+                      $q->where('stream', $stream)
+                        ->orWhere('stream', 'general');
+                  });
+
+            // Level Filtering for General Events
+            if (!empty($userLevels)) {
+                $query->where(function($q) use ($userLevels) {
+                    $q->whereNull('level')
+                      ->orWhereIn('level', ($userLevels ?? []));
+                });
+            }
         } elseif ($type === 'off_stage') {
             $query->where('stream', $stream)
                   ->where('stage_type', 'non_stage');

@@ -26,10 +26,10 @@ class Event extends Model
 {
     return $this->hasMany(\App\Models\Registration::class);
 }
-public function participants()
-{
-    return $this->hasMany(\App\Models\Participant::class);
-}
+// public function participants()
+// {
+//     return $this->hasMany(\App\Models\Participant::class);
+// }
 
 
 }
