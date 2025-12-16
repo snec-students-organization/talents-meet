@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-institution-layout>
 <div class="max-w-5xl mx-auto p-6">
 
     <h1 class="text-3xl font-bold mb-6">👥 My Institution Participants</h1>
@@ -41,4 +41,4 @@
     </table>
 
 </div>
-</x-app-layout>
+</x-institution-layout>
