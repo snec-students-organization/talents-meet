@@ -127,6 +127,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/events', [\App\Http\Controllers\Admin\EventController::class, 'index'])->name('admin.events.index');
         Route::get('/events/create', [\App\Http\Controllers\Admin\EventController::class, 'create'])->name('admin.events.create');
         Route::post('/events', [\App\Http\Controllers\Admin\EventController::class, 'store'])->name('admin.events.store');
+        Route::get('/events/{event}/edit', [\App\Http\Controllers\Admin\EventController::class, 'edit'])->name('admin.events.edit');
+        Route::put('/events/{event}', [\App\Http\Controllers\Admin\EventController::class, 'update'])->name('admin.events.update');
+        Route::delete('/events/{event}', [\App\Http\Controllers\Admin\EventController::class, 'destroy'])->name('admin.events.destroy');
 
         // ✅ FIXED: Assign Stage Route (no double prefix)
         Route::post('/events/{event}/assign-stage', [\App\Http\Controllers\Admin\EventController::class, 'assignStage'])

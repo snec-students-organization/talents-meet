@@ -64,6 +64,43 @@ class EventController extends Controller
             ->route('admin.events.index')
             ->with('success', 'Event added successfully!');
     }
+    
+    /**
+     * Show the form for editing the specified event.
+     */
+    public function edit(Event $event)
+    {
+        return view('admin.events.edit', compact('event'));
+    }
+
+    /**
+     * Update the specified event in storage.
+     */
+    public function update(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string',
+            'type' => 'required|string',
+            'stage_type' => 'required|in:stage,non_stage',
+            'stream' => 'required|string',
+            'level' => 'nullable|string',
+            'allowed_streams' => 'nullable|array',
+            'max_participants' => 'nullable|integer',
+            'max_institution_entries' => 'nullable|integer',
+        ]);
+
+        // Convert allowed_streams array to JSON if provided
+        $validated['allowed_streams'] = $request->allowed_streams
+            ? json_encode($request->allowed_streams)
+            : null;
+
+        $event->update($validated);
+
+        return redirect()
+            ->route('admin.events.index')
+            ->with('success', 'Event updated successfully!');
+    }
 
     /**
      * Assign a stage number (1–5) to an existing event.
@@ -78,5 +115,17 @@ class EventController extends Controller
         $event->save();
 
         return redirect()->back()->with('success', '✅ Stage assigned successfully!');
+    }
+
+    /**
+     * Remove the specified event from storage.
+     */
+    public function destroy(Event $event)
+    {
+        $event->delete();
+
+        return redirect()
+            ->route('admin.events.index')
+            ->with('success', 'Event deleted successfully!');
     }
 }

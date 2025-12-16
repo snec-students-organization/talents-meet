@@ -1,62 +1,82 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="eventForm()">
+    
+    {{-- HEADER --}}
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Create New Event</h1>
+            <p class="text-slate-500 text-sm mt-1">Configure event details and registration rules.</p>
+        </div>
+        <a href="{{ route('admin.events.index') }}" 
+           class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Back to List
+        </a>
+    </div>
 
-<div class="container py-5">
-
-    <h1 class="fw-bold mb-4" style="color:#013A63;">Add New Event</h1>
-
-    <form action="{{ route('admin.events.store') }}" method="POST"
-        x-data="eventForm()">
-
+    <form action="{{ route('admin.events.store') }}" method="POST" class="space-y-6">
         @csrf
 
-        <!-- MAIN FORM CARD -->
-        <div class="card shadow border-0 mb-4">
-            <div class="card-body">
-
-                <!-- EVENT NAME -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Event Name</label>
-                    <input type="text" name="name" class="form-control" required>
+        {{-- MAIN INFO CARD --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-slate-50">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <span class="p-1.5 bg-indigo-100 text-indigo-600 rounded-md text-sm">📝</span>
+                    Event Details
+                </h2>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- EVENT NAME --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Event Name</label>
+                    <input type="text" name="name" 
+                           class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm transition-all" 
+                           placeholder="e.g. Quran Recitation" required>
                 </div>
 
-                <!-- CATEGORY -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Category</label>
-                    <select name="category" class="form-select" required>
+                {{-- CATEGORY --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                    <select name="category" required
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Category</option>
                         @foreach(['A','B','C','D'] as $c)
-                            <option value="{{ $c }}">{{ $c }}</option>
+                            <option value="{{ $c }}">Category {{ $c }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- STAGE TYPE -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Stage Type</label>
-                    <select name="stage_type" class="form-select" required>
-                        <option value="">Select</option>
-                        <option value="stage">Stage Event</option>
-                        <option value="non_stage">Non-Stage Event</option>
-                    </select>
-                </div>
-
-                <!-- EVENT TYPE -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Event Type</label>
-                    <select name="type" class="form-select" x-model="type" required>
+                {{-- STAGE TYPE --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Stage Type</label>
+                    <select name="stage_type" required
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Type</option>
-                        <option value="individual">Individual</option>
-                        <option value="group">Group</option>
-                        <option value="general">General</option>
+                        <option value="stage">🎭 Stage Event</option>
+                        <option value="non_stage">📝 Non-Stage Event</option>
                     </select>
                 </div>
 
-                <!-- STREAM -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Stream</label>
-                    <select name="stream" class="form-select" x-model="stream" required>
+                {{-- EVENT TYPE --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Participation Type</label>
+                    <select name="type" x-model="type" required
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <option value="">Select Type</option>
+                        <option value="individual">👤 Individual</option>
+                        <option value="group">👥 Group</option>
+                        <option value="general">🌐 General</option>
+                    </select>
+                </div>
+
+                {{-- STREAM --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Stream</label>
+                    <select name="stream" x-model="stream" required
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Stream</option>
                         <option value="sharia">Sharia</option>
                         <option value="sharia_plus">Sharia Plus</option>
@@ -68,85 +88,94 @@
                     </select>
                 </div>
 
-                <!-- LEVEL (SHOW ONLY FOR SHARIA/SHE & NON-GENERAL) -->
-                <div class="mb-3" x-show="showLevel">
-                    <label class="form-label fw-semibold">Level</label>
-                    <select name="level" class="form-select">
+                {{-- LEVEL --}}
+                <div x-show="showLevel" x-transition class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Level (Optional)</label>
+                    <select name="level"
+                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Level</option>
                         <option value="sanaviyya_ulya">Sanaviyya Ulya</option>
                         <option value="bakalooriyya">Bakalooriyya</option>
                         <option value="majestar">Majestar</option>
                     </select>
                 </div>
-
             </div>
         </div>
 
-        <!-- RULES CARD -->
-        <div class="card shadow border-0 mb-4">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Event Rules & Restrictions</h5>
+        {{-- RULES CARD --}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-slate-50">
+                <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <span class="p-1.5 bg-amber-100 text-amber-600 rounded-md text-sm">⚖️</span>
+                    Rules & Restrictions
+                </h2>
             </div>
 
-            <div class="card-body">
-
-                <!-- Allowed Streams -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Allowed Streams (Optional)</label>
-
-                    <div class="row">
+            <div class="p-6 space-y-6">
+                
+                {{-- ALLOWED STREAMS --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-3">Allowed Streams (Optional)</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         @foreach(['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath'] as $s)
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input"
-                                           name="allowed_streams[]" value="{{ $s }}">
-                                    <label class="form-check-label text-capitalize">
-                                        {{ str_replace('_',' ', $s) }}
-                                    </label>
-                                </div>
-                            </div>
+                        <label class="relative flex items-center p-3 rounded-lg border border-gray-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                            <input type="checkbox" name="allowed_streams[]" value="{{ $s }}"
+                                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-slate-600 capitalize font-medium">
+                                {{ str_replace('_',' ', $s) }}
+                            </span>
+                        </label>
                         @endforeach
                     </div>
+                    <p class="text-xs text-slate-400 mt-2">Leave empty to allow all streams.</p>
                 </div>
 
-                <!-- Max Participants (GROUP ONLY) -->
-                <div class="mb-3" x-show="type === 'group'">
-                    <label class="form-label fw-semibold">Maximum Participants (Group Event)</label>
-                    <input type="number" name="max_participants" min="1" max="20"
-                           class="form-control">
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{-- MAX PARTICIPANTS --}}
+                    <div x-show="type === 'group'" x-transition>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Max Participants per Team</label>
+                        <input type="number" name="max_participants" min="1" max="50"
+                               class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    </div>
 
-                <!-- Max Entries -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Max Entries per Institution</label>
-                    <input type="number" name="max_institution_entries" min="1" value="1"
-                           class="form-control">
+                    {{-- MAX ENTRIES --}}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Max Entries per Institution</label>
+                        <input type="number" name="max_institution_entries" min="1" value="1"
+                               class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                    </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- SUBMIT -->
-        <button class="btn btn-primary px-4 py-2" style="background:#013A63; border:none;">
-            Add Event
-        </button>
-
+        {{-- FORM ACTIONS --}}
+        <div class="flex items-center justify-end gap-3 pt-4">
+            <a href="{{ route('admin.events.index') }}" 
+               class="px-5 py-2.5 bg-white border border-gray-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" 
+                    class="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Create Event
+            </button>
+        </div>
     </form>
-
 </div>
 
-<!-- 🔥 ALPINE LOGIC -->
 <script>
     function eventForm() {
         return {
             type: '',
             stream: '',
             get showLevel() {
+                // Return true if type is NOT general AND stream is sharia OR she
+                // Adjust logic as needed based on exact requirements
+                // "Level" field logic from original code:
                 return this.type !== 'general' &&
                        (this.stream === 'sharia' || this.stream === 'she');
             }
         }
     }
 </script>
-
 @endsection

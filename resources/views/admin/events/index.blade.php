@@ -149,6 +149,18 @@
                                                 Save
                                             </button>
                                         </form>
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <a href="{{ route('admin.events.edit', $event->id) }}" class="text-indigo-600 hover:text-indigo-900 text-xs">
+                                                ✏️ Edit
+                                            </a>
+                                            <form action="{{ route('admin.events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 text-xs">
+                                                    🗑️ Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -194,7 +206,18 @@
                                     <td class="px-4 py-3">{{ $event->max_participants ?? '-' }}</td>
                                     <td class="px-4 py-3">{{ $event->max_institution_entries ?? 1 }}</td>
                                     <td class="px-4 py-3 text-xs">{{ $event->created_at->format('d M Y') }}</td>
-                                </tr>
+                                    <td class="px-4 py-3 text-xs flex gap-2">
+                                         <a href="{{ route('admin.events.edit', $event->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                            ✏️ Edit
+                                        </a>
+                                        <form action="{{ route('admin.events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">
+                                                🗑️ Delete
+                                            </button>
+                                        </form>
+                                    </td>
                                 @endforeach
                             </tbody>
                         </table>
