@@ -39,6 +39,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stream</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Limits</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                             </tr>
@@ -60,29 +61,43 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                                         {{ str_replace('_', ' ', $event->stream) }}
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                        <div class="flex flex-col gap-1">
+                                            <span title="Max Entries per Institution">
+                                                🏷️ <strong>{{ $event->max_institution_entries ?? 1 }}</strong> Entries
+                                            </span>
+                                            @if(($event->max_participants ?? 1) > 1)
+                                                <span title="Max Participants per Entry" class="text-indigo-600">
+                                                    👥 <strong>{{ $event->max_participants }}</strong> / Team
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4">
                                         @if($event->registrations->isEmpty())
                                             <span class="text-gray-400 text-xs italic">No registrations</span>
                                         @else
-                                            <div class="flex -space-x-2 overflow-hidden">
-                                                @foreach($event->registrations->take(3) as $reg)
-                                                    <div class="inline-block h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs ring-2 ring-white" title="{{ $reg->student->name }}">
-                                                        {{ substr($reg->student->name, 0, 1) }}
+                                            <div class="flex flex-col gap-1 max-h-24 overflow-y-auto custom-scrollbar">
+                                                @foreach($event->registrations as $reg)
+                                                    <div class="text-xs text-gray-700 font-medium flex items-center gap-1">
+                                                        <span>👤</span> {{ $reg->student->name }}
                                                     </div>
                                                 @endforeach
-                                                @if($event->registrations->count() > 3)
-                                                    <div class="inline-block h-6 w-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs ring-2 ring-white">
-                                                        +{{ $event->registrations->count() - 3 }}
-                                                    </div>
-                                                @endif
                                             </div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <a href="{{ route('institution.events.registerForm', $event->id) }}" 
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            <span>➕</span> Register
-                                        </a>
+                                        @if($event->registrations->isNotEmpty())
+                                            <a href="{{ route('institution.events.registerForm', $event->id) }}" 
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 shadow-sm transition-all">
+                                                <span>✏️</span> Edit
+                                            </a>
+                                        @else
+                                            <a href="{{ route('institution.events.registerForm', $event->id) }}" 
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                <span>➕</span> Register
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

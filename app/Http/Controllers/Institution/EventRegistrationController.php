@@ -72,9 +72,15 @@ class EventRegistrationController extends Controller
     public function registerForm($eventId)
     {
         $event = Event::findOrFail($eventId);
-        $students = Student::where('institution_id', Auth::id())->get();
+        $institutionId = Auth::id();
+        
+        // Load existing registrations for pre-filling
+        $existingRegistrations = Registration::with('student')
+            ->where('event_id', $eventId)
+            ->where('institution_id', $institutionId)
+            ->get();
 
-        return view('institution.events.register', compact('event', 'students'));
+        return view('institution.events.register', compact('event', 'existingRegistrations'));
     }
 
 
@@ -84,46 +90,75 @@ class EventRegistrationController extends Controller
     public function register(Request $request, $eventId)
     {
         $request->validate([
-            'uid' => 'required|string|max:50',
-            'name' => 'required|string|max:255',
-            'gender' => 'nullable|string',
+            'participants' => 'nullable|array', // Nullable because they might clear all rows (though min:1 usually preferred)
+            'participants.*.uid' => 'nullable|string|max:50', // Allow empty rows to be ignored
+            'participants.*.name' => 'nullable|string|max:255',
+            'participants.*.gender' => 'nullable|string',
         ]);
 
         $event = Event::findOrFail($eventId);
         $institutionId = Auth::id();
 
-        // Check if student exists
-        $student = Student::where('uid', $request->uid)
+        // 1. Get current registered student IDs for this event
+        $currentRegistrationIds = Registration::where('event_id', $eventId)
             ->where('institution_id', $institutionId)
-            ->first();
+            ->pluck('student_id')
+            ->toArray();
 
-        // If not → create student
-        if (!$student) {
-            $student = Student::create([
-                'uid' => $request->uid,
-                'name' => $request->name,
-                'gender' => $request->gender,
-                'institution_id' => $institutionId,
-            ]);
+        $submittedStudentIds = [];
+        $registeredCount = 0;
+
+        // 2. Process submitted participants
+        if ($request->has('participants')) {
+            foreach ($request->participants as $participantData) {
+                // Skip empty rows
+                if (empty($participantData['uid']) || empty($participantData['name'])) continue;
+
+                // Find or Create Student using UID
+                // (Assuming UID is unique per student across system or at least inst scope)
+                $student = Student::updateOrCreate(
+                    ['uid' => $participantData['uid'], 'institution_id' => $institutionId],
+                    [
+                        'name' => $participantData['name'],
+                        'gender' => $participantData['gender'] ?? null
+                    ]
+                );
+
+                $submittedStudentIds[] = $student->id;
+
+                // Ensure Registration exists
+                if (!Registration::where('event_id', $eventId)
+                        ->where('student_id', $student->id)
+                        ->exists()) 
+                {
+                    Registration::create([
+                        'event_id' => $event->id,
+                        'student_id' => $student->id,
+                        'institution_id' => $institutionId,
+                    ]);
+                    $registeredCount++;
+                }
+            }
         }
 
-        // Prevent duplicate registration
-        if (Registration::where('event_id', $eventId)
-                ->where('student_id', $student->id)
-                ->exists()) 
-        {
-            return back()->with('error', 'This student is already registered for this event.');
+        // 3. Remove registrations that are NOT in the submitted list (Sync deletion)
+        $studentsToRemove = array_diff($currentRegistrationIds, $submittedStudentIds);
+        
+        if (!empty($studentsToRemove)) {
+            Registration::where('event_id', $eventId)
+                ->where('institution_id', $institutionId)
+                ->whereIn('student_id', $studentsToRemove)
+                ->delete();
         }
 
-        // Register
-        Registration::create([
-            'event_id' => $event->id,
-            'student_id' => $student->id,
-            'institution_id' => $institutionId,
-        ]);
+        $removedCount = count($studentsToRemove);
+        $message = "Registration updated! ";
+        if ($registeredCount > 0) $message .= "$registeredCount added. ";
+        if ($removedCount > 0) $message .= "$removedCount removed.";
+        if ($registeredCount == 0 && $removedCount == 0) $message = "No changes made.";
 
         return redirect()->route('institution.events.index')
-            ->with('success', 'Student registered successfully!');
+            ->with('success', $message);
     }
 
 
@@ -171,6 +206,7 @@ class EventRegistrationController extends Controller
 
         // Load unique students + all their events
         $students = Student::where('institution_id', $institution->id)
+            ->has('registrations') // Only show students active in at least one event
             ->with(['registrations.event'])
             ->get();
 
