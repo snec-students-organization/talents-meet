@@ -94,9 +94,9 @@
                     <select name="level"
                             class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Level</option>
-                        <option value="sanaviyya_ulya">Sanaviyya Ulya</option>
-                        <option value="bakalooriyya">Bakalooriyya</option>
-                        <option value="majestar">Majestar</option>
+                        <option value="Sanaviyya Ulya">Sanaviyya Ulya</option>
+                        <option value="Bakalooriyya">Bakalooriyya</option>
+                        <option value="Majestar">Majestar</option>
                     </select>
                 </div>
             </div>

@@ -19,47 +19,46 @@ class EventRegistrationController extends Controller
     public function index(Request $request)
     {
         $institution = Auth::user();
-        $type = $request->get('type', 'individual'); // Default to individual
+        $stream = $institution->stream;
+        $userLevels = $institution->levels ?? []; // e.g. ['Sanaviyya', 'Aliya']
+
+        // Filter by Type (Tabs)
+        $type = $request->query('type', 'individual'); // Default: individual
 
         $query = Event::query();
-
-        // 1. Filter by Stream (unless general)
-        // If type is general, we might want to show all general events regardless of stream
-        // But usually general events are open to all.
-        // Original logic: where('stream', inst->stream) orWhere('type','general')
-        // We will Refining this based on tabs.
 
         $query->with(['registrations' => function ($q) use ($institution) {
             $q->where('institution_id', $institution->id)->with('student');
         }]);
 
-        // Filter Logic
-        switch ($type) {
-            case 'group':
-                $query->where('stream', $institution->stream)
-                      ->where('stage_type', 'stage')
-                      ->where('type', 'group');
-                break;
-
-            case 'general':
-                // General events might be common to all or specific streams
-                // Assuming general events are marked as type='general'
-                $query->where('type', 'general');
-                break;
-
-            case 'off_stage':
-                $query->where('stream', $institution->stream)
-                      ->where('stage_type', 'non_stage');
-                break;
-
-            case 'individual':
-            default:
-                $query->where('stream', $institution->stream)
-                      ->where('stage_type', 'stage')
-                      ->where('type', 'individual');
-                break;
+        if ($type === 'general') {
+            $query->where('type', 'general');
+        } elseif ($type === 'off_stage') {
+            $query->where('stream', $stream)
+                  ->where('stage_type', 'non_stage');
+             
+             // Level Filtering for Off-Stage
+             if (!empty($userLevels)) {
+                 $query->where(function($q) use ($userLevels) {
+                     $q->whereNull('level')
+                       ->orWhereIn('level', $userLevels);
+                 });
+             }
+        } else {
+            // Stage Events (Individual or Group)
+            $query->where('stream', $stream)
+                  ->where('stage_type', 'stage')
+                  ->where('type', $type);
+            
+            // Level Filtering for Stage Events
+            if (!empty($userLevels)) {
+                 $query->where(function($q) use ($userLevels) {
+                     $q->whereNull('level')
+                       ->orWhereIn('level', $userLevels);
+                 });
+            }
         }
-
+        
         $events = $query->orderBy('category')->get();
 
         return view('institution.events.index', compact('events', 'type'));

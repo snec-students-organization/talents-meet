@@ -73,9 +73,9 @@
                     <label class="form-label fw-semibold">Level</label>
                     <select name="level" class="form-select">
                         <option value="">Select Level</option>
-                        <option value="sanaviyya_ulya" {{ old('level', $event->level) == 'sanaviyya_ulya' ? 'selected' : '' }}>Sanaviyya Ulya</option>
-                        <option value="bakalooriyya" {{ old('level', $event->level) == 'bakalooriyya' ? 'selected' : '' }}>Bakalooriyya</option>
-                        <option value="majestar" {{ old('level', $event->level) == 'majestar' ? 'selected' : '' }}>Majestar</option>
+                        <option value="Sanaviyya Ulya" {{ old('level', $event->level) == 'Sanaviyya Ulya' ? 'selected' : '' }}>Sanaviyya Ulya</option>
+                        <option value="Bakalooriyya" {{ old('level', $event->level) == 'Bakalooriyya' ? 'selected' : '' }}>Bakalooriyya</option>
+                        <option value="Majestar" {{ old('level', $event->level) == 'Majestar' ? 'selected' : '' }}>Majestar</option>
                     </select>
                 </div>
 
