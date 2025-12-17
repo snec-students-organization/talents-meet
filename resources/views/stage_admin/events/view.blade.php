@@ -112,7 +112,7 @@
                 didParseCell: function(data) {
                     // For the input field column, if we can read the value via JS, we should.
                     // But jsPDF html parser might just read the input value attribute if set.
-                    // Since we set value="{{ $reg->code_letter }}", it should work for saved ones.
+                    // The value attribute is set from the database, so it should work for saved codes.
                 }
             });
 

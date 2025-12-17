@@ -26,12 +26,14 @@
                 <div class="mt-2 text-3xl font-bold text-gray-900">{{ $events->count() }}</div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div class="text-gray-500 text-sm font-medium uppercase tracking-wide">Assignments</div>
-                <div class="mt-2 text-3xl font-bold text-gray-900">{{ $events->where('level', '!=', null)->count() }}</div>
+                <div class="text-gray-500 text-sm font-medium uppercase tracking-wide">Completed</div>
+                <div class="mt-2 text-3xl font-bold text-emerald-600">{{ $completedCount }}</div>
+                <div class="mt-1 text-xs text-gray-500">Chest numbers assigned</div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="text-gray-500 text-sm font-medium uppercase tracking-wide">Pending</div>
-                <div class="mt-2 text-3xl font-bold text-indigo-600">{{ $events->where('level', null)->count() }}</div>
+                <div class="mt-2 text-3xl font-bold text-orange-600">{{ $pendingCount }}</div>
+                <div class="mt-1 text-xs text-gray-500">Awaiting chest numbers</div>
             </div>
         </div>
 
@@ -65,7 +67,14 @@
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900">{{ $event->name }}</div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="text-sm font-bold text-gray-900">{{ $event->name }}</div>
+                                            @if($event->is_completed)
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                                    ✓ Complete
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">

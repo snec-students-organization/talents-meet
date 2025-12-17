@@ -49,7 +49,27 @@ class StageDashboardController extends Controller
             ->orderBy('category')
             ->get();
 
-        return view('stage_admin.dashboard', compact('events', 'stageNumber'));
+        // Calculate completed and pending assignments
+        $completedCount = 0;
+        $pendingCount = 0;
+
+        foreach ($events as $event) {
+            // Check if this event has at least one registration with a chest number
+            $hasChestNumbers = Registration::where('event_id', $event->id)
+                ->whereNotNull('code_letter')
+                ->exists();
+            
+            // Add completion status to event object
+            $event->is_completed = $hasChestNumbers;
+            
+            if ($hasChestNumbers) {
+                $completedCount++;
+            } else {
+                $pendingCount++;
+            }
+        }
+
+        return view('stage_admin.dashboard', compact('events', 'stageNumber', 'completedCount', 'pendingCount'));
     }
 
     /**
