@@ -72,10 +72,26 @@
                     </select>
                 </div>
 
-                {{-- STREAM --}}
-                <div>
+                {{-- CREATION MODE (Single vs Multi) --}}
+                <div class="md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-200 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Creation Mode</label>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="mode" value="single" x-model="mode" class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm text-slate-700">Single Stream</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="mode" value="multi" x-model="mode" class="text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm text-slate-700 font-medium">Multi-Stream (Batch Create)</span>
+                        </label>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2" x-show="mode === 'multi'">Select multiple streams to create separate events for each one instantly.</p>
+                </div>
+
+                {{-- STREAM (Single Mode) --}}
+                <div x-show="mode === 'single'">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Stream</label>
-                    <select name="stream" x-model="stream" required
+                    <select name="stream" x-model="stream" 
                             class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Stream</option>
                         <option value="sharia">Sharia</option>
@@ -88,12 +104,53 @@
                     </select>
                 </div>
 
-                {{-- LEVEL --}}
-                <div x-show="showLevel" x-transition class="md:col-span-2">
+                {{-- STREAMS (Multi Mode) --}}
+                <div x-show="mode === 'multi'" class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select Target Streams</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        @foreach(['sharia','sharia_plus','she','she_plus','life','life_plus','bayyinath'] as $s)
+                        <label class="relative flex items-center p-3 rounded-lg border border-gray-200 hover:bg-slate-50 cursor-pointer transition-colors"
+                               :class="selectedStreams.includes('{{ $s }}') ? 'bg-indigo-50 border-indigo-200' : ''">
+                            <input type="checkbox" name="streams[]" value="{{ $s }}" x-model="selectedStreams"
+                                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-slate-600 capitalize font-medium">
+                                {{ str_replace('_',' ', $s) }}
+                            </span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- SINGLE MODE LEVEL --}}
+                <div x-show="mode === 'single' && showLevel" x-transition class="md:col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Level (Optional)</label>
                     <select name="level"
                             class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
                         <option value="">Select Level</option>
+                        <option value="Sanaviyya Ulya">Sanaviyya Ulya</option>
+                        <option value="Bakalooriyya">Bakalooriyya</option>
+                        <option value="Majestar">Majestar</option>
+                    </select>
+                </div>
+
+                {{-- MULTI MODE: SHARIA LEVEL --}}
+                <div x-show="showShariaLevel" x-transition class="md:col-span-2 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                    <label class="block text-sm font-medium text-indigo-700 mb-1">Level for Sharia</label>
+                    <select name="sharia_level"
+                            class="w-full rounded-lg border-indigo-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm">
+                        <option value="">Select Sharia Level</option>
+                        <option value="Sanaviyya Ulya">Sanaviyya Ulya</option>
+                        <option value="Bakalooriyya">Bakalooriyya</option>
+                        <option value="Majestar">Majestar</option>
+                    </select>
+                </div>
+
+                {{-- MULTI MODE: SHE LEVEL --}}
+                <div x-show="showSheLevel" x-transition class="md:col-span-2 bg-pink-50 p-3 rounded-lg border border-pink-100">
+                    <label class="block text-sm font-medium text-pink-700 mb-1">Level for SHE</label>
+                    <select name="she_level"
+                            class="w-full rounded-lg border-pink-300 focus:border-pink-500 focus:ring-pink-500 shadow-sm">
+                        <option value="">Select SHE Level</option>
                         <option value="Sanaviyya Ulya">Sanaviyya Ulya</option>
                         <option value="Bakalooriyya">Bakalooriyya</option>
                         <option value="Majestar">Majestar</option>
@@ -166,14 +223,33 @@
 <script>
     function eventForm() {
         return {
+            mode: 'single', // single or multi
             type: '',
             stream: '',
+            selectedStreams: [],
+            
             get showLevel() {
-                // Show level for all streams except 'general' type or 'bayyinath'/'life' if they don't have levels
-                // Based on seeder: sharia, sharia_plus, she, she_plus, life_plus have levels.
-                // life and bayyinath do not.
                 if (this.type === 'general') return false;
-                return ['sharia', 'sharia_plus', 'she', 'she_plus', 'life_plus'].includes(this.stream);
+                // Only for single mode
+                if (this.mode !== 'single') return false;
+                
+                // Only "sharia" and "she" and maybe "life_plus" (check requirement) need levels.
+                // User explicitly said: "dont ask the level for she plus and sharia plus"
+                // Assuming "life_plus" still needs it based on original seeder?
+                // Let's stick to what's requested: remove internal plus ones.
+                // Seeder said: life_plus has levels.
+                const levelsStreams = ['sharia', 'she', 'life_plus'];
+                return levelsStreams.includes(this.stream);
+            },
+            get showShariaLevel() {
+                if (this.type === 'general' || this.mode !== 'multi') return false;
+                // Only 'sharia', not 'sharia_plus'
+                return this.selectedStreams.includes('sharia');
+            },
+            get showSheLevel() {
+                if (this.type === 'general' || this.mode !== 'multi') return false;
+                // Only 'she', not 'she_plus'
+                return this.selectedStreams.includes('she');
             }
         }
     }

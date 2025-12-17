@@ -146,7 +146,7 @@
             stream: '{{ old('stream', $event->stream) }}',
             get showLevel() {
                 if (this.type === 'general') return false;
-                return ['sharia', 'sharia_plus', 'she', 'she_plus', 'life_plus'].includes(this.stream);
+                return ['sharia', 'she', 'life_plus'].includes(this.stream);
             }
         }
     }
