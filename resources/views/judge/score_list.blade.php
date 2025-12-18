@@ -1,133 +1,147 @@
-<x-app-layout>
-    <div class="max-w-6xl mx-auto p-6">
+@extends('layouts.judge')
 
-        {{-- PAGE TITLE --}}
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">
-            Scores List — Stage {{ session('judge_stage') }}
-        </h1>
-
-        {{-- BACK BUTTON --}}
-        <a href="{{ route('judge.dashboard') }}"
-           class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded mb-6 inline-block">
-            ← Back to Dashboard
+@section('content')
+<div class="space-y-8">
+    
+    {{-- PAGE HEADER --}}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Score Rankings</h1>
+            <p class="text-slate-500 mt-1 font-medium">Consolidated rankings for Stage <span class="text-indigo-600 font-bold">{{ session('judge_stage') }}</span></p>
+        </div>
+        
+        <a href="{{ route('judge.dashboard') }}" 
+           class="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl shadow-sm transition-all font-semibold text-sm">
+            <span>🏠</span> Back to Dashboard
         </a>
+    </div>
 
-        {{-- NO EVENTS --}}
-        @if($events->isEmpty())
-            <div class="bg-yellow-100 text-yellow-800 p-4 rounded">
-                No events found for your stage.
-            </div>
-        @else
+    {{-- NO EVENTS --}}
+    @if($events->isEmpty())
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-20 text-center">
+            <div class="text-6xl mb-4">🏜️</div>
+            <h3 class="text-lg font-bold text-slate-800">No events found</h3>
+            <p class="text-slate-500 max-w-xs mx-auto">We couldn't find any events assigned to your stage.</p>
+        </div>
+    @else
 
-            {{-- LOOP EVENTS --}}
+        <div class="space-y-10">
             @foreach($events as $event)
-
                 @php
-                    // Fetch only scores for this event
                     $eventScores = $scores->where('event_id', $event->id);
-
-                    // Rank calculation
                     $ranked = $eventScores->sortByDesc('score')->values();
-
                     foreach ($ranked as $index => $item) {
                         $item->rank = $index + 1;
                     }
                 @endphp
 
-                <div class="bg-white shadow-md rounded-lg mb-10 overflow-hidden">
-
-                    {{-- EVENT HEADER --}}
-                    <div class="bg-blue-600 text-white p-4">
-                        <h2 class="text-xl font-semibold">{{ $event->name }}</h2>
-
-                        <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-blue-100">
-                            <div><strong>Category:</strong> {{ $event->category }}</div>
-                            <div><strong>Type:</strong> {{ ucfirst($event->type) }}</div>
-                            <div><strong>Stage Type:</strong> {{ ucfirst(str_replace('_', ' ', $event->stage_type)) }}</div>
-                            <div><strong>Stream:</strong> {{ ucwords(str_replace('_', ' ', $event->stream)) }}</div>
+                <div class="group">
+                    {{-- EVENT CARD --}}
+                    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all group-hover:shadow-xl group-hover:shadow-indigo-500/5 group-hover:border-indigo-100">
+                        
+                        {{-- EVENT HEADER --}}
+                        <div class="px-10 py-8 bg-slate-50/50 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="flex items-center gap-5">
+                                <div class="h-16 w-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+                                    🏆
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-black text-slate-900 leading-tight">{{ $event->name }}</h2>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
+                                            {{ $event->category }}
+                                        </span>
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-slate-500 font-bold text-xs uppercase tracking-widest">{{ str_replace('_', ' ', $event->stream) }}</span>
+                                    </div>
+                                </div>
+                            </div>
                             
-                            <div>
-                                <strong>Level:</strong>
-                                @if($event->level)
-                                    {{ ucwords(str_replace('_',' ',$event->level)) }}
-                                @else
-                                    —
-                                @endif
+                            <div class="flex items-center gap-8">
+                                <div class="text-center">
+                                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Participants</p>
+                                    <p class="text-xl font-black text-slate-800">{{ $eventScores->count() }}</p>
+                                </div>
+                                <div class="h-10 w-px bg-slate-200"></div>
+                                <div class="text-center">
+                                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Level</p>
+                                    <p class="text-xl font-black text-indigo-600">{{ $event->level ? str_replace('_',' ',$event->level) : 'General' }}</p>
+                                </div>
                             </div>
                         </div>
+
+                        {{-- TABLE SECTION --}}
+                        <div class="p-0">
+                            @if($eventScores->isEmpty())
+                                <div class="px-10 py-12 text-center">
+                                    <p class="text-slate-400 font-bold italic text-sm">No scores have been submitted for this event yet.</p>
+                                    <a href="{{ route('judge.view_event', $event->id) }}" class="inline-block mt-4 text-indigo-600 font-bold text-sm hover:underline italic">Click here to start scoring →</a>
+                                </div>
+                            @else
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-24 text-center">Rank</th>
+                                                <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Chest No</th>
+                                                <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Student UID</th>
+                                                <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Score</th>
+                                                <th class="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-50">
+                                            @foreach($ranked as $item)
+                                                @php
+                                                    $rankStyles = match($item->rank) {
+                                                        1 => 'bg-amber-100 text-amber-700 border-amber-200 ring-4 ring-amber-500/10',
+                                                        2 => 'bg-slate-100 text-slate-600 border-slate-200 ring-4 ring-slate-400/10',
+                                                        3 => 'bg-orange-100 text-orange-700 border-orange-200 ring-4 ring-orange-500/10',
+                                                        default => 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                                                    };
+                                                    $trophy = match($item->rank) {
+                                                        1 => '🥇',
+                                                        2 => '🥈',
+                                                        3 => '🥉',
+                                                        default => ''
+                                                    };
+                                                @endphp
+                                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                                    <td class="px-10 py-6 text-center">
+                                                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl font-black text-lg border {{ $rankStyles }}">
+                                                            {{ $trophy ?: $item->rank }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-8 py-6 text-center">
+                                                        <span class="text-lg font-extrabold text-slate-900">{{ $item->registration->code_letter }}</span>
+                                                    </td>
+                                                    <td class="px-8 py-6 text-center">
+                                                        <span class="text-sm font-bold text-slate-400 italic">#{{ $item->registration->student->uid ?? '-' }}</span>
+                                                    </td>
+                                                    <td class="px-8 py-6 text-center">
+                                                        <div class="inline-flex flex-col">
+                                                            <span class="text-2xl font-black text-indigo-600 leading-none">{{ $item->score }}</span>
+                                                            <span class="text-[8px] font-bold text-slate-300 uppercase tracking-tighter mt-1">Points</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-10 py-6 text-center">
+                                                        <span class="inline-flex items-center justify-center w-12 h-12 bg-white border-2 border-slate-100 rounded-2xl text-xl font-black text-slate-800 shadow-sm">
+                                                            {{ $item->grade ?? '—' }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+
                     </div>
-
-                    @if($eventScores->isEmpty())
-                        <p class="p-4 text-gray-500 italic">
-                            No scores submitted for this event.
-                        </p>
-                    @else
-
-                        {{-- SCORE TABLE --}}
-                        <table class="min-w-full bg-white text-sm">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-700">
-                                    <th class="p-3 w-20">Rank</th>
-                                    <th class="p-3 text-center">Chest No</th>
-                                    <th class="p-3 text-center">UID</th>
-                                    <th class="p-3 text-center">Score</th>
-                                    <th class="p-3 text-center">Grade</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @foreach($ranked as $item)
-
-                                    @php
-                                        // Rank Badge Colors
-                                        $rankColor = match($item->rank) {
-                                            1 => 'bg-yellow-300 text-yellow-900',
-                                            2 => 'bg-gray-300 text-gray-800',
-                                            3 => 'bg-orange-300 text-orange-900',
-                                            default => 'bg-blue-100 text-blue-800'
-                                        };
-                                    @endphp
-
-                                    <tr class="border-b hover:bg-gray-50">
-
-                                        {{-- RANK --}}
-                                        <td class="p-3">
-                                            <span class="px-3 py-1 rounded text-sm font-bold {{ $rankColor }}">
-                                                {{ $item->rank }}
-                                            </span>
-                                        </td>
-
-                                        {{-- CHEST NO --}}
-                                        <td class="p-3 text-center font-semibold text-blue-700">
-                                            {{ $item->registration->code_letter }}
-                                        </td>
-
-                                        {{-- UID --}}
-                                        <td class="p-3 text-center">
-                                            {{ $item->registration->student->uid ?? '-' }}
-                                        </td>
-
-                                        {{-- SCORE --}}
-                                        <td class="p-3 text-center">
-                                            {{ $item->score }}
-                                        </td>
-
-                                        {{-- GRADE --}}
-                                        <td class="p-3 text-center font-bold">
-                                            {{ $item->grade ?? '-' }}
-                                        </td>
-
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-
-                    @endif
-
                 </div>
             @endforeach
+        </div>
 
-        @endif
+    @endif
 
-    </div>
-</x-app-layout>
+</div>
+@endsection
