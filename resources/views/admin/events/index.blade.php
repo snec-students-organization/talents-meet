@@ -150,6 +150,9 @@
                                             </button>
                                         </form>
                                         <div class="mt-1 flex items-center gap-2">
+                                            <a href="{{ route('admin.registrations.show', $event->id) }}" class="text-emerald-600 hover:text-emerald-900 text-xs">
+                                                👥 Registrations
+                                            </a>
                                             <a href="{{ route('admin.events.edit', $event->id) }}" class="text-indigo-600 hover:text-indigo-900 text-xs">
                                                 ✏️ Edit
                                             </a>
@@ -207,6 +210,9 @@
                                     <td class="px-4 py-3">{{ $event->max_institution_entries ?? 1 }}</td>
                                     <td class="px-4 py-3 text-xs">{{ $event->created_at->format('d M Y') }}</td>
                                     <td class="px-4 py-3 text-xs flex gap-2">
+                                         <a href="{{ route('admin.registrations.show', $event->id) }}" class="text-emerald-600 hover:text-emerald-900">
+                                            👥 Registrations
+                                        </a>
                                          <a href="{{ route('admin.events.edit', $event->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                             ✏️ Edit
                                         </a>

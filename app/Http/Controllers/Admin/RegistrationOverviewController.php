@@ -15,4 +15,12 @@ class RegistrationOverviewController extends Controller
 
         return view('admin.registrations.index', compact('events'));
     }
+
+    public function show(Event $event)
+    {
+        // Load the event with its registrations, students, and institutions
+        $event->load(['registrations.student', 'registrations.institution']);
+
+        return view('admin.registrations.show', compact('event'));
+    }
 }

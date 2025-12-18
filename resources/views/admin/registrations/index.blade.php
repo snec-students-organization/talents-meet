@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     <div class="max-w-6xl mx-auto py-10 px-6">
         <h1 class="text-3xl font-bold text-gray-800 mb-8">Event Registrations Overview</h1>
 
@@ -11,47 +13,61 @@
                             ({{ strtoupper($event->category) }} | {{ ucfirst($event->type) }} | {{ ucfirst(str_replace('_', ' ', $event->stream)) }})
                         </span>
                     </h2>
-                    <!-- Stage Type Badge -->
-                    <span class="{{ $event->stage_type === 'stage' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} px-3 py-1 rounded-full text-sm font-semibold">
-                        {{ $event->stage_type === 'stage' ? 'Stage Event' : 'Non-Stage Event' }}
-                    </span>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('admin.registrations.show', $event->id) }}" class="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-50 transition-colors">
+                            View All Students
+                        </a>
+                        <!-- Stage Type Badge -->
+                        <span class="{{ $event->stage_type === 'stage' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} px-3 py-1 rounded-full text-sm font-semibold">
+                            {{ $event->stage_type === 'stage' ? 'Stage Event' : 'Non-Stage Event' }}
+                        </span>
+                    </div>
                 </div>
 
                 <div class="p-4">
                     @if($event->registrations->isEmpty())
                         <p class="text-gray-500 italic">No students registered for this event yet.</p>
                     @else
-                        <table class="w-full border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 text-left">
-                                    <th class="p-2 border">#</th>
-                                    <th class="p-2 border">Student Name</th>
-                                    <th class="p-2 border">Institution</th>
-                                    <th class="p-2 border">Stream</th>
-                                    <th class="p-2 border">Category</th>
-                                    <th class="p-2 border">Stage Type</th> <!-- Added column -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($event->registrations as $index => $reg)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="p-2 border">{{ $index + 1 }}</td>
-                                        <td class="p-2 border">{{ $reg->student->name }}</td>
-                                        <td class="p-2 border">{{ $reg->institution->name ?? 'N/A' }}</td>
-                                        <td class="p-2 border capitalize">{{ str_replace('_', ' ', $event->stream) }}</td>
-                                        <td class="p-2 border">{{ $event->category }}</td>
-                                        <td class="p-2 border">
-                                            <span class="{{ $event->stage_type === 'stage' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} px-2 py-1 rounded-full text-xs">
-                                                {{ $event->stage_type === 'stage' ? 'Stage Event' : 'Non-Stage Event' }}
-                                            </span>
-                                        </td>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-100 text-left">
+                                        <th class="p-2 border text-xs">#</th>
+                                        <th class="p-2 border text-xs">UID</th>
+                                        <th class="p-2 border text-xs">Student Name</th>
+                                        <th class="p-2 border text-xs">Institution</th>
+                                        <th class="p-2 border text-xs">Category</th>
+                                        <th class="p-2 border text-xs">Stage Type</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach($event->registrations->take(5) as $index => $reg)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="p-2 border text-sm">{{ $index + 1 }}</td>
+                                            <td class="p-2 border text-sm font-mono text-indigo-600">{{ $reg->student->uid ?? 'N/A' }}</td>
+                                            <td class="p-2 border text-sm">{{ $reg->student->name }}</td>
+                                            <td class="p-2 border text-sm">{{ $reg->institution->name ?? 'N/A' }}</td>
+                                            <td class="p-2 border text-sm">{{ $event->category }}</td>
+                                            <td class="p-2 border text-sm">
+                                                <span class="{{ $event->stage_type === 'stage' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} px-2 py-1 rounded-full text-xs">
+                                                    {{ $event->stage_type === 'stage' ? 'Stage' : 'Non-Stage' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            @if($event->registrations->count() > 5)
+                                <div class="mt-2 text-center">
+                                    <a href="{{ route('admin.registrations.show', $event->id) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        ... and {{ $event->registrations->count() - 5 }} more. View all
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
                     @endif
                 </div>
             </div>
         @endforeach
     </div>
-</x-app-layout>
+@endsection

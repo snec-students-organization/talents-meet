@@ -138,6 +138,8 @@ Route::middleware(['auth', 'role:admin'])
         // Registrations
         Route::get('/registrations', [\App\Http\Controllers\Admin\RegistrationOverviewController::class, 'index'])
             ->name('admin.registrations.index');
+        Route::get('/registrations/{event}', [\App\Http\Controllers\Admin\RegistrationOverviewController::class, 'show'])
+            ->name('admin.registrations.show');
     });
 
 
