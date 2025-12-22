@@ -62,7 +62,8 @@ Route::get('/results/{stream}', function($stream) {
     }
 
     // BEST PARTICIPANT FOR EACH INSTITUTION PER EVENT
-    $details = Registration::select(
+    $details = Registration::with('institution')->select(
+            'registrations.id',
             'registrations.institution_id',
             'registrations.event_id',
             'students.uid',
@@ -77,6 +78,7 @@ Route::get('/results/{stream}', function($stream) {
         ->leftJoin('judge_scores', 'judge_scores.registration_id', 'registrations.id')
         ->where('events.stream', $stream)
         ->groupBy(
+            'registrations.id',
             'registrations.institution_id',
             'registrations.event_id',
             'students.uid',
@@ -86,10 +88,34 @@ Route::get('/results/{stream}', function($stream) {
         )
         ->get();
 
-    // Group by event → then institution ID → take top performer
-    $eventRanks = $details->groupBy('event_id')->map(function ($eventGroup) {
-        return $eventGroup->groupBy('institution_id')->map(function ($instGroup) {
-            return $instGroup->sortByDesc('avg_score')->first();
+    // Group by event -> Rank all participants
+    $rankPoints = [
+        'A' => [1 => 10, 2 => 7, 3 => 5],
+        'B' => [1 => 7, 2 => 5, 3 => 3],
+        'C' => [1 => 5, 2 => 3, 3 => 1],
+        'D' => [1 => 20, 2 => 15, 3 => 10],
+    ];
+    $gradePoints = ['A' => 5, 'B' => 3, 'C' => 1];
+
+    $eventRanks = $details->groupBy('event_id')->map(function ($eventGroup) use ($rankPoints, $gradePoints) {
+        $sorted = $eventGroup->sortByDesc('avg_score');
+        $rank = 1;
+        $prevScore = null;
+
+        return $sorted->map(function ($item) use (&$rank, &$prevScore, $rankPoints, $gradePoints) {
+            $avg = (float)$item->avg_score;
+            if ($prevScore !== null && $avg < $prevScore) {
+                $rank++;
+            }
+            $item->rank = $rank;
+            $prevScore = $avg;
+
+            // Optional: Calculate points for this specific event result
+            $rP = $rankPoints[$item->category][$rank] ?? 0;
+            $gP = $gradePoints[$item->grade] ?? 0;
+            $item->points = $rP + $gP;
+
+            return $item;
         });
     });
 

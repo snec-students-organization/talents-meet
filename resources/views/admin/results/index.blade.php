@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     <div class="max-w-6xl mx-auto p-6">
 
         <h1 class="text-3xl font-bold mb-6">Results – Admin Panel</h1>
@@ -91,19 +93,40 @@
                 </thead>
 
                 <tbody>
-                    @php $rank = 1; @endphp
+                    @foreach($eventData as $item)
+                        @if($item->rank > 3) @continue @endif {{-- Show only top 3 as requested --}}
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="p-3">
+                                @if($item->rank == 1)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                        🥇 1st
+                                    </span>
+                                @elseif($item->rank == 2)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                        🥈 2nd
+                                    </span>
+                                @elseif($item->rank == 3)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                                        🥉 3rd
+                                    </span>
+                                @else
+                                    <span class="text-gray-500">{{ $item->rank }}</span>
+                                @endif
+                            </td>
+                            <td class="p-3">
+                                <span class="font-medium text-gray-900">{{ $item->institution->name ?? 'N/A' }}</span>
+                            </td>
+                            <td class="p-3 font-mono text-indigo-600">{{ $item->uid }}</td>
+                            <td class="p-3 text-gray-700">{{ $item->name }}</td>
+                            <td class="p-3 text-gray-500 uppercase">{{ $item->category }}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-1 rounded text-xs font-bold {{ $item->grade == 'A' ? 'bg-emerald-100 text-emerald-800' : ($item->grade == 'B' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
+                                    {{ $item->grade ?? '—' }}
+                                </span>
+                            </td>
 
-                    @foreach($eventData as $instId => $item)
-                        <tr class="border-b">
-                            <td class="p-3 font-bold">{{ $rank++ }}</td>
-                            <td class="p-3">{{ $item->institution->name ?? '' }}</td>
-                            <td class="p-3">{{ $item->uid }}</td>
-                            <td class="p-3">{{ $item->name }}</td>
-                            <td class="p-3">{{ $item->category }}</td>
-                            <td class="p-3">{{ $item->grade }}</td>
-
-                            {{-- Event Points (NOT total stream points) --}}
-                            <td class="p-3 font-bold text-blue-700">
+                            {{-- Event Points --}}
+                            <td class="p-3 font-bold text-blue-700 text-right">
                                 {{ $item->points }}
                             </td>
                         </tr>
@@ -114,4 +137,4 @@
         @endforeach
 
     </div>
-</x-app-layout>
+@endsection

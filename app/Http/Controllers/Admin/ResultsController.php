@@ -68,6 +68,7 @@ class ResultsController extends Controller
 
     // BEST PARTICIPANT PER INSTITUTION PER EVENT
     $details = Registration::select(
+            'registrations.id',
             'registrations.institution_id',
             'registrations.event_id',
             'students.uid',
@@ -82,6 +83,7 @@ class ResultsController extends Controller
         ->leftJoin('judge_scores', 'judge_scores.registration_id', 'registrations.id')
         ->where('events.stream', $stream)
         ->groupBy(
+            'registrations.id',
             'registrations.institution_id',
             'registrations.event_id',
             'students.uid',
@@ -91,10 +93,27 @@ class ResultsController extends Controller
         )
         ->get();
 
-    // Group for admin view
+    // Group for admin view - Calculate individual ranks
     $eventRanks = $details->groupBy('event_id')->map(function ($eventGroup) {
-        return $eventGroup->groupBy('institution_id')->map(function ($instGroup) {
-            return $instGroup->sortByDesc('avg_score')->first();
+        $sorted = $eventGroup->sortByDesc('avg_score');
+        
+        $rank = 1;
+        $prevScore = null;
+        
+        return $sorted->map(function ($item) use (&$rank, &$prevScore) {
+            $avg = (float)$item->avg_score;
+            if ($prevScore !== null && $avg < $prevScore) {
+                $rank++;
+            }
+            $item->rank = $rank;
+            $prevScore = $avg;
+            
+            // Calculate points for the display
+            $rankPoint = ($this->rankPoints[$item->category][$rank] ?? 0);
+            $gradeBonus = ($this->gradePoints[$item->grade] ?? 0);
+            $item->points = $rankPoint + $gradeBonus;
+            
+            return $item;
         });
     });
 
